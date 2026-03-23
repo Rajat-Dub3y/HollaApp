@@ -1,15 +1,18 @@
-import { MailService } from '@sendgrid/mail';
+import { Resend } from "resend";
+import nodemailer from "nodemailer";
 import { welcomeEmailTemplate, premiumUpgradeEmailTemplate, premiumPlusUpgradeEmailTemplate, createSupportAutoReply, refundRequestAutoReplyTemplate, refundRequestNotificationTemplate } from './emailTemplates.ts';
 import dotenv from 'dotenv'
 dotenv.config()
-const mailService = new MailService();
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Initialize SendGrid with the new API key
-const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
-if (SENDGRID_API_KEY) {
-  mailService.setApiKey(SENDGRID_API_KEY);
-  console.log('SendGrid initialized with API key:', SENDGRID_API_KEY.substring(0, 15) + '...');
-}
+const gmailTransporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS,
+  },
+});
 
 interface EmailParams {
   to: string;
@@ -85,53 +88,67 @@ function checkRateLimit(email: string): boolean {
 }
 
 export async function sendEmail(params: EmailParams): Promise<boolean> {
-  // Security validations
+  // ✅ SAME VALIDATIONS (unchanged)
   if (!isValidEmail(params.to)) {
     console.error("Invalid email address:", params.to);
     return false;
   }
-  
+
   if (!checkRateLimit(params.to)) {
     console.error("Rate limit exceeded for email:", params.to);
     return false;
   }
 
-  if (!process.env.SENDGRID_API_KEY) {
-    console.log("SendGrid API key not configured, email would be sent:", {
-      ...params,
-      text: sanitizeContent(params.text || ''),
-      html: sanitizeContent(params.html || '')
-    });
-    return true;
+  const sanitizedText = sanitizeContent(params.text || '');
+  const sanitizedHtml = sanitizeContent(params.html || '');
+
+  // 🚀 Try RESEND first
+  try {
+    if (false && process.env.RESEND_API_KEY) {
+      await resend.emails.send({
+        from: typeof params.from === "string"
+          ? params.from
+          : `${params.from.name} <${params.from.email}>`,
+        to: params.to,
+        subject: params.subject,
+        text: sanitizedText,
+        html: sanitizedHtml,
+      });
+
+      console.log(`✅ Email sent via Resend to ${params.to}`);
+      return true;
+    }
+  } catch (error) {
+    console.error("❌ Resend failed:", error);
   }
 
+  // 🔁 FALLBACK → Gmail SMTP
   try {
-    const emailData: any = {
-      to: params.to,
-      from: params.from,
-      subject: params.subject,
-    };
-    
-    if (params.text) emailData.text = sanitizeContent(params.text);
-    if (params.html) emailData.html = sanitizeContent(params.html);
-    
-    await mailService.send(emailData);
-    console.log(`Email sent successfully to ${params.to}`);
-    return true;
+    if (process.env.GMAIL_USER && process.env.GMAIL_PASS) {
+      await gmailTransporter.sendMail({
+        from: typeof params.from === "string"
+          ? params.from
+          : `${params.from.name} <${params.from.email}>`,
+        to: params.to,
+        subject: params.subject,
+        text: sanitizedText,
+        html: sanitizedHtml,
+      });
+
+      console.log(`✅ Email sent via Gmail fallback to ${params.to}`);
+      return true;
+    }
   } catch (error) {
-    console.error('SendGrid email error:', error);
-    
-    // For now, log the email that would have been sent
-    console.log("Email that would have been sent:", {
-      to: params.to,
-      from: params.from,
-      subject: params.subject,
-      content: params.text
-    });
-    
-    // Return true to prevent blocking the user experience
-    return true;
+    console.error("❌ Gmail fallback failed:", error);
   }
+
+  // 🧪 DEV MODE fallback (same as your current behavior)
+  console.log("⚠️ No email provider configured, logging email:", {
+    to: params.to,
+    subject: params.subject,
+  });
+
+  return true;
 }
 
 export async function sendWelcomeEmail(email: string): Promise<boolean> {
@@ -167,7 +184,7 @@ export async function sendWelcomeEmail(email: string): Promise<boolean> {
         </div>
         
         <div style="text-align: center; margin: 30px 0;">
-          <a href="https://holla.replit.app" style="display: inline-block; background: linear-gradient(135deg, #FACC15, #F59E0B); color: black; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">Start Using Holla Now</a>
+          <a href="${process.env.FRONTEND_URL}/auth/callback" style="display: inline-block; background: linear-gradient(135deg, #FACC15, #F59E0B); color: black; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">Start Using Holla Now</a>
         </div>
         
         <p>Ready to stop getting ghosted? Let's make dating fun again.</p>

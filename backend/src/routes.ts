@@ -483,8 +483,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           },
         ],
         mode: 'subscription',
-        success_url: success_url || 'https://holla.replit.app/welcome-premium',
-        cancel_url: cancel_url || 'https://holla.replit.app/subscribe',
+        success_url: success_url || '${process.env.FRONTEND_URL}/welcome-premium',
+        cancel_url: cancel_url || '${process.env.FRONTEND_URL}/subscribe',
         customer_email: email,
         metadata: {
           email: email,

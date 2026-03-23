@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Mail, ArrowRight } from "lucide-react";
 import { useLocation } from "wouter";
-import LaunchReadyPayment from "@/components/launch-ready-payment";
 import SimplePaymentForm from "@/components/simple-payment-form";
 import MobilePaymentDebug from "@/components/mobile-payment-debug";
 
@@ -23,6 +22,7 @@ export default function NoOAuthSubscribe() {
     e.preventDefault();
     
     if (!email || !email.includes('@')) {
+      localStorage.setItem("emailForSignIn", email);
       toast({
         title: "Invalid Email",
         description: "Please enter a valid email address",

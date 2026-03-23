@@ -24,6 +24,7 @@ import Feedback from "./pages/feedback";
 import RefundPolicy from "./pages/refund-policy";
 import PremiumCheckout from "./pages/premium-checkout";
 import PaymentTest from "./pages/payment-test";
+import AuthCallback from "./pages/AuthCallback";
 
 function Router() {
   return (
@@ -48,6 +49,7 @@ function Router() {
       <Route path="/refund-policy" component={RefundPolicy} />
       <Route path="/premium-checkout" component={PremiumCheckout} />
       <Route path="/payment-test" component={PaymentTest} />
+      <Route path="/auth/callback" component={<AuthCallback />} />
       <Route component={NotFound} />
     </Switch>
   );

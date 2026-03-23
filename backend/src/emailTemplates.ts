@@ -1,5 +1,6 @@
 // Email templates for automated support system
-
+import dotenv from "dotenv"
+dotenv.config()
 export const welcomeEmailTemplate = (email: string) => ({
   to: email,
   from: 'hollasupp444@gmail.com',
@@ -19,14 +20,14 @@ export const welcomeEmailTemplate = (email: string) => ({
       </div>
       
       <div style="text-align: center; margin: 30px 0;">
-        <a href="https://holla.replit.app" style="display: inline-block; background: linear-gradient(135deg, #7C3AED, #2563EB); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">Try Holla™ Now</a>
+        <a href="${process.env.FRONTEND_URL}/auth/callback" style="display: inline-block; background: linear-gradient(135deg, #7C3AED, #2563EB); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">Try Holla™ Now</a>
       </div>
       
       <p>– Team Holla™</p>
       
       <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
       <p style="font-size: 12px; color: #666;">
-        Ready to share Holla™? <a href="https://holla.replit.app" style="color: #7C3AED;">Tell your friends</a> about smarter messaging.
+        Ready to share Holla™? <a href="${process.env.FRONTEND_URL}/auth/callback" style="color: #7C3AED;">Tell your friends</a> about smarter messaging.
       </p>
     </div>
   `,
@@ -64,7 +65,7 @@ export const premiumUpgradeEmailTemplate = (email: string, userName?: string) =>
       <p><strong>Fun fact:</strong> 75% of women say the first message matters most. You now have the tools to nail it every time.</p>
       
       <div style="text-align: center; margin: 30px 0;">
-        <a href="https://holla.replit.app" style="display: inline-block; background: linear-gradient(135deg, #FACC15, #F59E0B); color: black; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">Start Your Premium Experience</a>
+        <a href="${process.env.FRONTEND_URL}/auth/callback" style="display: inline-block; background: linear-gradient(135deg, #FACC15, #F59E0B); color: black; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">Start Your Premium Experience</a>
       </div>
       
       <p>Time to show the dating world what you're made of.</p>
@@ -112,7 +113,7 @@ export const premiumPlusUpgradeEmailTemplate = (email: string, userName?: string
       <p>You now have access to the same strategies that top dating coaches charge hundreds for.</p>
       
       <div style="text-align: center; margin: 30px 0;">
-        <a href="https://holla.replit.app" style="display: inline-block; background: linear-gradient(135deg, #7C3AED, #2563EB); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">Access Premium Plus Features</a>
+        <a href="${process.env.FRONTEND_URL}/auth/callback" style="display: inline-block; background: linear-gradient(135deg, #7C3AED, #2563EB); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">Access Premium Plus Features</a>
       </div>
       
       <p>– Team Holla™</p>
@@ -196,7 +197,7 @@ export const createSupportAutoReply = (email: string, feedbackType: string) => {
         </div>
         
         <div style="text-align: center; margin: 30px 0;">
-          <a href="https://holla.replit.app" style="display: inline-block; background: linear-gradient(135deg, #7C3AED, #2563EB); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">${template.cta}</a>
+          <a href="${process.env.FRONTEND_URL}/auth/callback" style="display: inline-block; background: linear-gradient(135deg, #7C3AED, #2563EB); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">${template.cta}</a>
         </div>
         
         <p>Need faster help? Just reply to this email.</p>
@@ -215,7 +216,7 @@ ${template.message}
 
 Holla™ was built for guys tired of getting ghosted. This might just be the best thing you try this week.
 
-${template.cta}: https://holla.replit.app
+${template.cta}: ${process.env.FRONTEND_URL}
 
 Need faster help? Just reply to this email.
 
@@ -249,7 +250,7 @@ export const dripCampaignTemplates = [
         <p>The AI doesn't just generate replies – it understands <em>psychology</em>. Each tone triggers different emotional responses.</p>
         
         <div style="text-align: center; margin: 30px 0;">
-          <a href="https://holla.replit.app" style="display: inline-block; background: linear-gradient(135deg, #7C3AED, #2563EB); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">Try Different Tones Now</a>
+          <a href="${process.env.FRONTEND_URL}/auth/callback" style="display: inline-block; background: linear-gradient(135deg, #7C3AED, #2563EB); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">Try Different Tones Now</a>
         </div>
         
         <p>– Team Holla</p>
@@ -290,7 +291,7 @@ The AI doesn't just generate replies – it understands psychology. Each tone tr
         <p>These aren't just features – they're based on dating psychology that works. Use Romeo to decode her profile, then let the Pattern Interrupt Engine create replies that actually get responses.</p>
         
         <div style="text-align: center; margin: 30px 0;">
-          <a href="https://holla.replit.app" style="display: inline-block; background: linear-gradient(135deg, #FACC15, #F59E0B); color: black; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">Try These Tools Now</a>
+          <a href="${process.env.FRONTEND_URL}/auth/callback" style="display: inline-block; background: linear-gradient(135deg, #FACC15, #F59E0B); color: black; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">Try These Tools Now</a>
         </div>
         
         <p>– Team Holla</p>
@@ -328,7 +329,7 @@ These aren't just features – they're based on dating psychology that works. Us
         <p><strong>The future?</strong> We're building tools that will make every interaction feel natural and confident. You're part of something bigger.</p>
         
         <div style="text-align: center; margin: 30px 0;">
-          <a href="https://holla.replit.app" style="display: inline-block; background: linear-gradient(135deg, #FACC15, #F59E0B); color: black; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">Continue Your Journey</a>
+          <a href="${process.env.FRONTEND_URL}/auth/callback" style="display: inline-block; background: linear-gradient(135deg, #FACC15, #F59E0B); color: black; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">Continue Your Journey</a>
         </div>
         
         <p>Thanks for being part of the Holla family.</p>
