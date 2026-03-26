@@ -2,7 +2,8 @@ import express from "express";
 import type { Request, Response, NextFunction } from "express";
 import session from "express-session";
 import createMemoryStore from "memorystore";
-import { registerRoutes } from "./src/routes.ts";
+import { registerRoutes } from "./src/routes";
+import cors from "cors";
 
 const app = express();
 
@@ -24,6 +25,15 @@ app.use(
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000,
     },
+  })
+);
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://holla-app-nu.vercel.app",
+    ],
+    credentials: true,
   })
 );
 

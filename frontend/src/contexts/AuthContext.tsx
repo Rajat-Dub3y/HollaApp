@@ -45,8 +45,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     // Send Firebase ID token to backend to create session
     const idToken = await user.getIdToken();
-    await fetch("/api/auth/firebase-login", {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/auth/firebase-login`, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -59,8 +60,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     // Send Firebase ID token to backend to create session
     const idToken = await user.getIdToken();
-    await fetch("/api/auth/firebase-login", {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/auth/firebase-login`, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -77,8 +79,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     // Send Firebase ID token to backend to create session
     const idToken = await user.getIdToken();
-    await fetch("/api/auth/firebase-login", {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/auth/firebase-login`, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -88,8 +91,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function logout() {
     // Clear backend session
-    await fetch("/api/auth/logout", {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/auth/logout`, {
       method: "POST",
+      credentials: "include",
     });
     
     // Sign out from Firebase
@@ -114,8 +118,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Sync with backend session when Firebase auth state changes
         try {
           const idToken = await user.getIdToken();
-          await fetch("/api/auth/firebase-sync", {
+          await fetch(`${import.meta.env.VITE_API_URL}/api/auth/firebase-sync`, {
             method: "POST",
+            credentials: "include",
             headers: {
               "Content-Type": "application/json",
             },
