@@ -102,17 +102,29 @@ ${colorConfig
 
 const ChartTooltip = RechartsPrimitive.Tooltip
 
-const ChartTooltipContent = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
-    React.ComponentProps<"div"> & {
-      hideLabel?: boolean
-      hideIndicator?: boolean
-      indicator?: "line" | "dot" | "dashed"
-      nameKey?: string
-      labelKey?: string
-    }
->(
+type ChartTooltipPayloadItem = {
+  name?: string
+  dataKey?: string
+  value?: number | string | null
+  color?: string
+  payload?: Record<string, any>
+}
+
+type ChartTooltipContentProps = React.ComponentProps<"div"> & {
+  active?: boolean
+  payload?: ChartTooltipPayloadItem[]
+  label?: string | number | undefined
+  labelFormatter?: ((label: any, payload: any) => React.ReactNode) | undefined
+  labelClassName?: string
+  formatter?: ((value: any, name: any, props: any, index: number, payload: any) => React.ReactNode) | undefined
+  hideLabel?: boolean
+  hideIndicator?: boolean
+  indicator?: "line" | "dot" | "dashed"
+  nameKey?: string
+  labelKey?: string
+}
+
+const ChartTooltipContent = React.forwardRef<HTMLDivElement, ChartTooltipContentProps>(
   (
     {
       active,
@@ -188,11 +200,16 @@ const ChartTooltipContent = React.forwardRef<
           {payload.map((item, index) => {
             const key = `${nameKey || item.name || item.dataKey || "value"}`
             const itemConfig = getPayloadConfigFromPayload(config, item, key)
-            const indicatorColor = color || item.payload.fill || item.color
+            const safePayload = item && typeof item === "object" ? (item as Record<string, any>).payload : undefined
+            const indicatorColor =
+              color ||
+              (safePayload ? safePayload.fill : undefined) ||
+              item.color ||
+              "currentColor"
 
             return (
               <div
-                key={item.dataKey}
+                key={item.dataKey || `${index}`}
                 className={cn(
                   "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground",
                   indicator === "dot" && "items-center"
@@ -258,13 +275,23 @@ ChartTooltipContent.displayName = "ChartTooltip"
 
 const ChartLegend = RechartsPrimitive.Legend
 
+type ChartLegendPayloadItem = {
+  value?: string | number
+  dataKey?: string
+  name?: string
+  color?: string
+}
+
+type ChartLegendContentProps = React.ComponentProps<"div"> & {
+  payload?: ChartLegendPayloadItem[]
+  verticalAlign?: "top" | "bottom"
+  hideIcon?: boolean
+  nameKey?: string
+}
+
 const ChartLegendContent = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<"div"> &
-    Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
-      hideIcon?: boolean
-      nameKey?: string
-    }
+  ChartLegendContentProps
 >(
   (
     { className, hideIcon = false, payload, verticalAlign = "bottom", nameKey },
@@ -326,33 +353,33 @@ function getPayloadConfigFromPayload(
     return undefined
   }
 
+  const payloadObj = payload as Record<string, any>
   const payloadPayload =
-    "payload" in payload &&
-    typeof payload.payload === "object" &&
-    payload.payload !== null
-      ? payload.payload
+    payloadObj.payload && typeof payloadObj.payload === "object"
+      ? (payloadObj.payload as Record<string, any>)
       : undefined
 
-  let configLabelKey: string = key
+  let configLabelKey = key
 
-  if (
-    key in payload &&
-    typeof payload[key as keyof typeof payload] === "string"
-  ) {
-    configLabelKey = payload[key as keyof typeof payload] as string
+  if (payloadObj[key] && typeof payloadObj[key] === "string") {
+    configLabelKey = payloadObj[key]
   } else if (
     payloadPayload &&
-    key in payloadPayload &&
-    typeof payloadPayload[key as keyof typeof payloadPayload] === "string"
+    payloadPayload[key] &&
+    typeof payloadPayload[key] === "string"
   ) {
-    configLabelKey = payloadPayload[
-      key as keyof typeof payloadPayload
-    ] as string
+    configLabelKey = payloadPayload[key]
   }
 
-  return configLabelKey in config
-    ? config[configLabelKey]
-    : config[key as keyof typeof config]
+  if (configLabelKey in config) {
+    return config[configLabelKey]
+  }
+
+  if (key in config) {
+    return config[key]
+  }
+
+  return undefined
 }
 
 export {

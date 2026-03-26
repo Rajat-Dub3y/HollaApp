@@ -49,7 +49,7 @@ function Router() {
       <Route path="/refund-policy" component={RefundPolicy} />
       <Route path="/premium-checkout" component={PremiumCheckout} />
       <Route path="/payment-test" component={PaymentTest} />
-      <Route path="/auth/callback" component={<AuthCallback />} />
+      <Route path="/auth/callback" component={AuthCallback} />
       <Route component={NotFound} />
     </Switch>
   );
