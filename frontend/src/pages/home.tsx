@@ -9,8 +9,6 @@ import Footer from "@/components/footer";
 import RomeoChat from "@/components/romeo-chat";
 import DevTestingPanel from "@/components/dev-testing-panel";
 import PatternInterruptEngine from "@/components/pattern-interrupt-engine";
-import RomeoDateingCoach from "@/components/romeo-dating-coach";
-import EmbeddedRomeoCoach from "@/components/embedded-romeo-coach";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuth as useOldAuth } from "../hooks/useAuth";
 import { MessageSquare, User, LogOut } from "lucide-react";
@@ -246,7 +244,6 @@ export default function Home() {
                   </div>
                   
                   {/* Embedded Romeo Dating Coach Chat */}
-                  <EmbeddedRomeoCoach />
                 </div>
               </div>
             )}
@@ -263,13 +260,12 @@ export default function Home() {
       {/* Footer */}
       <Footer />
       
-      {/* Romeo AI Chat */}
+      {/* Romeo AI Chat*/} 
       <RomeoChat />
       
-      {/* Romeo Dating Coach (Premium only) */}
-      {isPremium && <RomeoDateingCoach />}
+      {/*Romeo Dating Coach (Premium only) */}
       
-      <DevTestingPanel />
+      {/*<DevTestingPanel />*/}
     </div>
   );
 }
