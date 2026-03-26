@@ -41,9 +41,8 @@ function SimpleMessageInput() {
 
     setLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/generate-replies`, {
+      const response = await fetch(`/generate-replies`, {
         method: "POST",
-        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: message.trim(), tone: selectedTone, language: "en" })
       });
