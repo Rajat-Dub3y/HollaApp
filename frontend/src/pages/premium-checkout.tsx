@@ -1,7 +1,7 @@
 import { useStripe, Elements, PaymentElement, useElements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { useEffect, useState } from 'react';
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useStandaloneAuth } from "@/hooks/useStandaloneAuth";
 import { useAuth } from "@/hooks/useAuth";
@@ -50,10 +50,17 @@ const CheckoutForm = ({ standaloneUser, authUser }: { standaloneUser: any; authU
       // Payment successful - activate premium
       try {
         const userEmail = standaloneUser?.email || authUser?.email;
-        const response = await apiRequest("POST", "/api/payment-success", {
+        await apiRequest("POST", "/api/payment-success", {
           payment_intent_id: paymentIntent.id,
           email: userEmail
         });
+
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['/api/standalone-auth/user'] }),
+          queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] }),
+          queryClient.refetchQueries({ queryKey: ['/api/standalone-auth/user'] }),
+          queryClient.refetchQueries({ queryKey: ['/api/auth/user'] }),
+        ]);
         
         toast({
           title: "Payment Successful!",
@@ -123,14 +130,17 @@ const CheckoutForm = ({ standaloneUser, authUser }: { standaloneUser: any; authU
 
 export default function PremiumCheckout() {
   const [clientSecret, setClientSecret] = useState("");
-  const { isAuthenticated, isLoading, user: standaloneUser } = useStandaloneAuth();
-  const { user: authUser } = useAuth();
+  const { isAuthenticated: isStandaloneAuthenticated, isLoading: isStandaloneLoading, user: standaloneUser } = useStandaloneAuth();
+  const { user: authUser, isLoading: isAuthLoading } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [showStandaloneLogin, setShowStandaloneLogin] = useState(false);
+  const isLoading = isStandaloneLoading || isAuthLoading;
+  const isAuthenticated = isStandaloneAuthenticated || !!authUser;
+  const currentUser = standaloneUser || authUser;
 
   // Check if user is already premium
-  const isPremium = (standaloneUser as any)?.subscriptionStatus === "premium" || (standaloneUser as any)?.subscriptionStatus === "premium_plus";
+  const isPremium = (currentUser as any)?.subscriptionStatus === "premium" || (currentUser as any)?.subscriptionStatus === "premium_plus";
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -139,6 +149,7 @@ export default function PremiumCheckout() {
     }
 
     if (isAuthenticated) {
+      setShowStandaloneLogin(false);
       // Check if already premium
       if (isPremium) {
         toast({
@@ -148,9 +159,10 @@ export default function PremiumCheckout() {
         setLocation("/");
         return;
       }
+      const userEmail = currentUser?.email;
 
       // Create payment intent
-      apiRequest("POST", "/api/create-payment-intent", { amount: 999 })
+      apiRequest("POST", "/api/create-payment-intent", { amount: 999, email: userEmail })
         .then((res) => res.json())
         .then((data) => {
           setClientSecret(data.clientSecret);
@@ -164,7 +176,7 @@ export default function PremiumCheckout() {
           });
         });
     }
-  }, [isAuthenticated, isLoading, isPremium, toast, setLocation]);
+  }, [currentUser, isAuthenticated, isLoading, isPremium, setLocation, toast]);
 
   const handleLoginSuccess = () => {
     setShowStandaloneLogin(false);

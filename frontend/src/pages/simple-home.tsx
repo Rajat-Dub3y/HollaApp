@@ -39,7 +39,7 @@ export default function SimpleHome() {
 
     setLoading(true);
     try {
-      const response = await fetch(`/generate-replies`, {
+      const response = await fetch(`api/generate-replies`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },

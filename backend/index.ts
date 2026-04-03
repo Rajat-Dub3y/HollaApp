@@ -7,8 +7,22 @@ import cors from "cors";
 
 const app = express();
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+const jsonParser = express.json();
+const urlencodedParser = express.urlencoded({ extended: false });
+
+app.use('/api/webhook/stripe', express.raw({ type: 'application/json' }));
+app.use((req, res, next) => {
+  if (req.originalUrl === '/api/webhook/stripe') {
+    return next();
+  }
+  return jsonParser(req, res, next);
+});
+app.use((req, res, next) => {
+  if (req.originalUrl === '/api/webhook/stripe') {
+    return next();
+  }
+  return urlencodedParser(req, res, next);
+});
 
 const MemoryStore = createMemoryStore(session);
 
@@ -27,7 +41,7 @@ app.use(
     },
   })
 );
-app.use(
+/*app.use(
   cors({
     origin: [
       "http://localhost:5173",
@@ -35,7 +49,7 @@ app.use(
     ],
     credentials: true,
   })
-);
+);*/
 
 // Register API routes
 registerRoutes(app);

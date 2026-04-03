@@ -7,11 +7,10 @@ import PremiumUpsell from "@/components/premium-upsell";
 import FeaturesSection from "@/components/features-section";
 import Footer from "@/components/footer";
 import RomeoChat from "@/components/romeo-chat";
-import DevTestingPanel from "@/components/dev-testing-panel";
 import PatternInterruptEngine from "@/components/pattern-interrupt-engine";
 import { useAuth } from "@/contexts/AuthContext";
-import { useAuth as useOldAuth } from "../hooks/useAuth";
-import { MessageSquare, User, LogOut } from "lucide-react";
+import { usePremiumAccess } from "@/hooks/usePremiumAccess";
+import { MessageSquare, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { analytics } from "@/lib/analytics";
 import { Link } from "wouter";
@@ -28,16 +27,10 @@ export default function Home() {
   const [showResults, setShowResults] = useState(false);
   const [activeTab, setActiveTab] = useState<"replies" | "saved" | "pattern" | "coach">("replies");
   const { currentUser, logout } = useAuth();
+  console.log(currentUser)
   
-  const { isPremium: authPremium, isPremiumPlus: authPremiumPlus } = useOldAuth();
-  
-  // Check premium status from multiple sources
-  const localPremiumStatus = localStorage.getItem('userPremiumStatus');
-  const isPremium = authPremium || 
-                   localPremiumStatus === 'premium' || 
-                   localPremiumStatus === 'premium_plus';
-  const isPremiumPlus = authPremiumPlus || 
-                       localPremiumStatus === 'premium_plus';
+  const { isPremium, isPremiumPlus } = usePremiumAccess();
+  console.log("authPremium:", isPremium);
 
   const handleDisclaimerAccept = () => {
     setDisclaimerAccepted(true);
@@ -107,7 +100,7 @@ export default function Home() {
                       Sign In
                     </Button>
                   </Link>
-                  <Link href="/subscribe">
+                  <Link href="/signup">
                     <button className="bg-[#7C3AED] hover:bg-[#6D28D9] px-6 py-2 rounded-lg font-medium transition-colors text-white">
                       Get Started
                     </button>

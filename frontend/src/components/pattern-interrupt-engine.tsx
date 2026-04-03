@@ -6,7 +6,7 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { Brain, Zap, Target, Lightbulb, Lock } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { usePremiumAccess } from "@/hooks/usePremiumAccess";
 import { useLocation } from "wouter";
 
 interface PatternAnalysis {
@@ -24,7 +24,7 @@ export default function PatternInterruptEngine({ onToneRecommended }: PatternInt
   const [message, setMessage] = useState("");
   const [analysis, setAnalysis] = useState<PatternAnalysis | null>(null);
   const { toast } = useToast();
-  const { isPremium } = useAuth();
+  const { isPremium } = usePremiumAccess();
   const [, setLocation] = useLocation();
 
   const analyzeMutation = useMutation({

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Wand2, Globe, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
+import { usePremiumAccess } from "@/hooks/usePremiumAccess";
 import { useLocation } from "wouter";
 
 interface GeneratedReply {
@@ -24,7 +24,7 @@ export default function MessageInput({ onRepliesGenerated }: MessageInputProps) 
   const [selectedTone, setSelectedTone] = useState<"confident" | "funny" | "flirty" | "creative">("confident");
   const [selectedLanguage, setSelectedLanguage] = useState<"en" | "hi">("en");
   const { toast } = useToast();
-  const { isPremium } = useAuth();
+  const { isPremium } = usePremiumAccess();
   const [, setLocation] = useLocation();
 
   // Load language preference from localStorage on component mount

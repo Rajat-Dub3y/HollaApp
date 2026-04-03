@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
 
 export function useStandaloneAuth() {
   const { data: user, isLoading, error } = useQuery({
@@ -18,14 +17,7 @@ export function useStandaloneAuth() {
           throw new Error(`HTTP ${response.status}`);
         }
         
-        const userData = await response.json();
-        
-        // TEMPORARY: Enable premium for testing
-        if (userData) {
-          userData.subscriptionStatus = "premium";
-        }
-        
-        return userData;
+        return await response.json();
       } catch (err) {
         return null;
       }

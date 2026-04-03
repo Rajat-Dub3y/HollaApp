@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Mail, ArrowRight } from "lucide-react";
+import { auth } from '@/lib/firebase';
 
 interface StandaloneLoginProps {
   onLoginSuccess: (email: string) => void;
@@ -16,6 +17,7 @@ export default function StandaloneLogin({ onLoginSuccess }: StandaloneLoginProps
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const firebaseUser = auth.currentUser;
     
     if (!email || !email.includes('@')) {
       toast({
@@ -29,7 +31,10 @@ export default function StandaloneLogin({ onLoginSuccess }: StandaloneLoginProps
     setIsLoading(true);
     
     try {
-      const response = await apiRequest("POST", "/api/standalone-login", { email });
+      const response = await apiRequest("POST", "/api/standalone-login", { 
+        email,
+        firebaseUid: firebaseUser?.uid || null,  // ✅ send Firebase UID
+      });
       const data = await response.json();
       
       if (data.success) {

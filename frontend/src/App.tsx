@@ -25,14 +25,17 @@ import RefundPolicy from "./pages/refund-policy";
 import PremiumCheckout from "./pages/premium-checkout";
 import PaymentTest from "./pages/payment-test";
 import AuthCallback from "./pages/AuthCallback";
+import SignUp from "./pages/SignUp";
+import Cancel from "./pages/Cancel";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/login" component={Login} />
+      <Route path="/signup" component={SignUp} />
       <Route path="/subscribe" component={NoOAuthSubscribe} />
-      <Route path="/no-oauth-subscribe" component={NoOAuthSubscribe} />
+      <Route path="/no-oauth-subscribe" component={NoOAuthSubscribe}/>
       <Route path="/subscribe-oauth" component={Subscribe} />
       <Route path="/subscribe-premium-plus" component={SubscribePremiumPlus} />
       <Route path="/privacy" component={Privacy} />
@@ -40,6 +43,7 @@ function Router() {
       <Route path="/about" component={About} />
       <Route path="/help" component={Help} />
       <Route path="/contact" component={Contact} />
+      <Route path="/cancel" component={Cancel} />
       <Route path="/how-it-works" component={HowItWorks} />
       <Route path="/success-stories" component={SuccessStories} />
       <Route path="/report" component={Report} />

@@ -1,1 +1,25 @@
-{}
+{
+  "name": "holla",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rajat-Dub3y/HollaApp.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Rajat-Dub3y/HollaApp/issues"
+  },
+  "homepage": "https://github.com/Rajat-Dub3y/HollaApp#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

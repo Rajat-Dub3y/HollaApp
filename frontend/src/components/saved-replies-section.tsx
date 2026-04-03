@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Bookmark, Trash2, Copy, Check, Crown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
+import { usePremiumAccess } from "@/hooks/usePremiumAccess";
 
 interface SavedReply {
   text: string;
@@ -14,7 +14,7 @@ export default function SavedRepliesSection() {
   const [savedReplies, setSavedReplies] = useState<SavedReply[]>([]);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user } = usePremiumAccess();
   
   const isPremium = (user as any)?.subscriptionStatus === "premium" || (user as any)?.subscriptionStatus === "premium_plus";
   const maxSavedReplies = isPremium ? "Unlimited" : "10";

@@ -6,7 +6,7 @@ export default function TestApp() {
 
   const testAPI = async () => {
     try {
-      const response = await fetch(`/test`);
+      const response = await fetch(`api/test`);
       const data = await response.json();
       setResult(JSON.stringify(data, null, 2));
     } catch (error) {

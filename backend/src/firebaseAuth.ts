@@ -1,6 +1,8 @@
 import { initializeApp, cert, getApps } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import type { Express, Request, Response, NextFunction } from "express";
+import { optionalAuth } from "./unifiedAuth";
+import { storage } from "./storage";
 
 // Initialize Firebase Admin SDK
 let adminApp;
@@ -15,6 +17,33 @@ if (getApps().length === 0) {
 }
 
 const adminAuth = getAuth(adminApp);
+
+async function resolveFirebaseDbUser(decodedToken: any) {
+  const firebaseUid = decodedToken.uid as string;
+  const email = decodedToken.email ?? null;
+
+  let user = await storage.getUser(firebaseUid);
+  if (user) {
+    return user;
+  }
+
+  if (email) {
+    const existingUsers = await storage.getUserByEmail(email);
+    if (existingUsers.length > 0) {
+      return existingUsers[0];
+    }
+  }
+
+  return await storage.upsertUser({
+    id: firebaseUid,
+    email,
+    firstName: decodedToken.name || null,
+    lastName: null,
+    profileImageUrl: decodedToken.picture || null,
+    welcomeEmailSent: false,
+    subscriptionStatus: 'free',
+  });
+}
 
 // Middleware to verify Firebase ID token and create session
 export async function verifyFirebaseToken(req: Request, res: Response, next: NextFunction) {
@@ -49,6 +78,7 @@ export function setupFirebaseAuth(app: Express) {
 
     try {
       const decodedToken = await adminAuth.verifyIdToken(idToken);
+      const dbUser = await resolveFirebaseDbUser(decodedToken);
       
       // Store Firebase user info in session
       (req.session as any).firebaseUser = {
@@ -58,11 +88,12 @@ export function setupFirebaseAuth(app: Express) {
         emailVerified: decodedToken.email_verified,
         picture: decodedToken.picture,
       };
+      (req.session as any).firebaseDbUserId = dbUser.id;
 
       // Also store in a compatible format for existing code
       (req.session as any).user = {
         claims: {
-          sub: decodedToken.uid,
+          sub: dbUser.id,
           email: decodedToken.email,
           name: decodedToken.name || decodedToken.email?.split('@')[0],
         }
@@ -95,6 +126,7 @@ export function setupFirebaseAuth(app: Express) {
 
     try {
       const decodedToken = await adminAuth.verifyIdToken(idToken);
+      const dbUser = await resolveFirebaseDbUser(decodedToken);
       
       // Update session with latest Firebase user info
       (req.session as any).firebaseUser = {
@@ -104,10 +136,11 @@ export function setupFirebaseAuth(app: Express) {
         emailVerified: decodedToken.email_verified,
         picture: decodedToken.picture,
       };
+      (req.session as any).firebaseDbUserId = dbUser.id;
 
       (req.session as any).user = {
         claims: {
-          sub: decodedToken.uid,
+          sub: dbUser.id,
           email: decodedToken.email,
           name: decodedToken.name || decodedToken.email?.split('@')[0],
         }
@@ -142,7 +175,43 @@ export function setupFirebaseAuth(app: Express) {
       res.json({ success: true });
     });
   });
+
+  
+  app.get('/api/auth/user', async (req, res) => {
+  const uid = req.query.uid as string;
+
+if (!uid) {
+  return res.status(400).json({ error: "uid is required" });
 }
+
+let user = await storage.getUser(uid);
+
+if (!user) {
+  const sessionDbUserId = (req.session as any)?.firebaseDbUserId;
+  if (sessionDbUserId) {
+    user = await storage.getUser(sessionDbUserId);
+  }
+}
+
+if (!user && (req.session as any)?.firebaseUser?.email) {
+  const existingUsers = await storage.getUserByEmail((req.session as any).firebaseUser.email);
+  if (existingUsers.length > 0) {
+    user = existingUsers[0];
+  }
+}
+
+if (!user) {
+  return res.status(404).json({ error: "User not found" });
+}
+
+res.json({
+  id: user.id,
+  email: user.email,
+  subscriptionStatus: user.subscriptionStatus ?? null,
+});
+});
+}
+
 
 // Middleware to check if user is authenticated via Firebase
 export const isFirebaseAuthenticated = (req: Request, res: Response, next: NextFunction) => {

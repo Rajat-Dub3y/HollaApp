@@ -41,7 +41,7 @@ function SimpleMessageInput() {
 
     setLoading(true);
     try {
-      const response = await fetch(`/generate-replies`, {
+      const response = await fetch(`api/generate-replies`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: message.trim(), tone: selectedTone, language: "en" })

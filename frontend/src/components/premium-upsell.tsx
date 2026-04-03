@@ -2,20 +2,16 @@ import { Button } from "@/components/ui/button";
 import { Check, X, Crown, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { useAuth } from "@/hooks/useAuth";
+import { usePremiumAccess } from "@/hooks/usePremiumAccess";
 
 export default function PremiumUpsell() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  const { isPremium, isPremiumPlus } = useAuth();
-  const localPremiumStatus = localStorage.getItem('userPremiumStatus');
+  const { isPremium, isPremiumPlus } = usePremiumAccess();
   
   // Check premium status from multiple sources for accurate display
   const hasActivePremium = isPremium || 
-                          isPremiumPlus || 
-                          localPremiumStatus === 'premium' || 
-                          localPremiumStatus === 'premium_plus';
-
+                          isPremiumPlus;
   // Don't show upsell if user already has premium subscription
   if (hasActivePremium) {
     return (

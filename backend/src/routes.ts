@@ -1,13 +1,12 @@
 import type { Express } from "express";
-import type { Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import Stripe from "stripe";
-import { storage } from "./storage.ts";
-import { generateReplySchema, supportChatSchema } from "./schema.ts";
+import { storage } from "./storage";
+import { generateReplySchema, supportChatSchema } from "./schema";
 //import { generateReplies, generateRomeoResponse, analyzeMessagePattern, generateRomeoDateingCoachResponse } from "./openai.ts";
-import { generateReplies, generateRomeoResponse, analyzeMessagePattern, generateRomeoDateingCoachResponse } from "./groqai.ts";
-import { sendWelcomeEmail, sendFeedbackNotification, sendFeedbackAutoReply, sendPremiumUpgradeEmail, sendPremiumPlusUpgradeEmail, sendDripCampaignEmail, sendRefundRequestAutoReply, sendRefundRequestNotification } from "./sendgrid.ts";
-import { optionalAuth } from "./unifiedAuth.ts";
+import { generateReplies, generateRomeoResponse, analyzeMessagePattern, generateRomeoDateingCoachResponse } from "./groqai";
+import { sendWelcomeEmail, sendFeedbackNotification, sendFeedbackAutoReply, sendPremiumUpgradeEmail, sendPremiumPlusUpgradeEmail, sendDripCampaignEmail, sendRefundRequestAutoReply, sendRefundRequestNotification } from "./sendgrid";
+import { optionalAuth } from "./unifiedAuth";
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
@@ -15,16 +14,117 @@ if (!process.env.STRIPE_SECRET_KEY) {
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// Simple middleware that bypasses authentication completely
-const noAuth = (req: any, res: any, next: any) => {
-  req.user = { claims: { sub: 'anonymous-user-' + Date.now() } };
-  next();
+const getRequestUserId = (req: any): string | undefined => req?.user?.claims?.sub;
+
+const logPaymentResolution = (source: string, lookup: string, userId: string) => {
+  console.log(`[payments] ${source}: resolved user ${userId} via ${lookup}`);
 };
 
+async function resolvePaymentUser({
+  req,
+  metadataUserId,
+  email,
+}: {
+  req?: any;
+  metadataUserId?: string | null;
+  email?: string | null;
+}) {
+  const sessionUserId = req ? getRequestUserId(req) : undefined;
+
+  if (sessionUserId) {
+    const sessionUser = await storage.getUser(sessionUserId);
+    if (sessionUser) {
+      return { user: sessionUser, lookup: `session:${sessionUserId}` };
+    }
+    console.warn(`[payments] session user ${sessionUserId} not found in database`);
+  }
+
+  if (metadataUserId) {
+    const metadataUser = await storage.getUser(metadataUserId);
+    if (metadataUser) {
+      return { user: metadataUser, lookup: `metadata:${metadataUserId}` };
+    }
+    console.warn(`[payments] metadata user ${metadataUserId} not found in database`);
+  }
+
+  if (email) {
+    const users = await storage.getUserByEmail(email);
+    if (users.length > 0) {
+      return { user: users[0], lookup: `email:${email}` };
+    }
+    console.warn(`[payments] no user found for email ${email}`);
+  }
+
+  return null;
+}
+
+async function activatePremiumUser(
+  userId: string,
+  source: string,
+  paymentData: {
+    stripeCustomerId?: string | null;
+    stripeSubscriptionId?: string | null;
+  },
+) {
+  const updatedUser = await storage.activatePremiumSubscription(userId, {
+    stripeCustomerId: paymentData.stripeCustomerId,
+    stripeSubscriptionId: paymentData.stripeSubscriptionId,
+    subscriptionStatus: 'premium',
+    subscriptionStartDate: new Date(),
+  });
+
+  console.log(
+    `[payments] ${source}: activated premium for user ${updatedUser.id} (customer=${updatedUser.stripeCustomerId || 'none'}, subscription=${updatedUser.stripeSubscriptionId || 'none'})`,
+  );
+
+  return updatedUser;
+}
+
+// Simple middleware that bypasses authentication completely
+const noAuth = (req: any, res: any, next: any) => {
+  const anonId = req.headers['x-anon-id'];
+
+  if (!anonId) {
+    return res.status(400).json({ error: 'Missing anonymous ID' });
+  }
+
+  req.user = {
+    claims: {
+      sub: anonId
+    }
+  };
+
+  next();
+};
 export async function registerRoutes(app: Express): Promise<Server> {
   // Test route to verify API routing works
   app.get('/api/test', (req, res) => {
     res.json({ status: 'API routes working correctly', timestamp: new Date().toISOString() });
+  });
+
+  app.get('/api/session-user', optionalAuth, async (req: any, res) => {
+    try {
+      const userId = getRequestUserId(req);
+
+      if (!userId) {
+        return res.status(401).json({ message: 'Not authenticated' });
+      }
+
+      const user = await storage.getUser(userId);
+
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      res.json({
+        id: user.id,
+        email: user.email,
+        subscriptionStatus: user.subscriptionStatus ?? null,
+      });
+    } catch (error) {
+      console.error('Session user lookup error:', error);
+      res.status(500).json({ message: 'Failed to load session user' });
+    }
   });
 
   // Health check for external monitoring
@@ -363,67 +463,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Stripe subscription routes
-  app.post('/api/create-subscription', noAuth, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const existingUser = await storage.getUser(userId);
+app.post('/api/create-subscription', async (req: any, res) => {
+  try {
+    const { uid, email } = req.body;
 
-      let customer;
-      if (existingUser?.stripeCustomerId) {
-        customer = await stripe.customers.retrieve(existingUser.stripeCustomerId);
-      } else {
-        customer = await stripe.customers.create({
-          email: req.body.email || `user-${userId}@example.com`,
-          metadata: {
-            userId: userId
-          }
-        });
-
-        await storage.updateUserStripeInfo(userId, customer.id, '');
-      }
-
-      const subscription = await stripe.subscriptions.create({
-        customer: customer.id,
-        items: [{ price: process.env.STRIPE_PRICE_ID }],
-        payment_behavior: 'default_incomplete',
-        payment_settings: { save_default_payment_method: 'on_subscription' },
-        expand: ['latest_invoice.payment_intent'],
-      });
-
-      const invoice = subscription.latest_invoice as any;
-      const paymentIntent = invoice.payment_intent as Stripe.PaymentIntent;
-
-      await storage.updateUserStripeInfo(userId, customer.id, subscription.id);
-
-      res.json({
-        subscriptionId: subscription.id,
-        clientSecret: paymentIntent.client_secret,
-      });
-    } catch (error) {
-      console.error('Subscription creation error:', error);
-      res.status(500).json({ error: 'Failed to create subscription' });
+    if (!uid) {
+      return res.status(400).json({ error: "Missing uid" });
     }
-  });
+
+    // 🔹 Create customer (or reuse)
+    let user = await storage.getUser(uid);
+    let customer;
+
+    if (user?.stripeCustomerId) {
+      customer = await stripe.customers.retrieve(user.stripeCustomerId);
+    } else {
+      customer = await stripe.customers.create({
+        email,
+        metadata: { userId: uid },
+      });
+
+      await storage.updateUserStripeInfo(uid, customer.id, '');
+    }
+
+    // 🔥 CREATE PAYMENT INTENT (THIS FIXES EVERYTHING)
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: 999, // ⚠️ must match your price (₹9.99 → 999 cents)
+      currency: "usd",
+      customer: (customer as any).id,
+      automatic_payment_methods: {
+        enabled: true,
+      },
+    });
+
+    res.json({
+      clientSecret: paymentIntent.client_secret,
+    });
+
+  } catch (error: any) {
+    console.error("PaymentIntent error:", error);
+    res.status(500).json({
+      error: error.message || "Failed to create payment intent",
+    });
+  }
+});
 
   // Create payment intent for subscription
-  app.post('/api/create-payment-intent', async (req, res) => {
-    try {
-      const { amount } = req.body;
-      
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: amount || 999,
-        currency: 'usd',
-        automatic_payment_methods: {
-          enabled: true,
-        },
-      });
+app.post('/api/create-payment-intent', optionalAuth, async (req: any, res) => {
+  try {
+    const { amount, email } = req.body;
+    const userId = getRequestUserId(req);
 
-      res.json({ clientSecret: paymentIntent.client_secret });
-    } catch (error) {
-      console.error('Payment intent error:', error);
-      res.status(500).json({ error: 'Failed to create payment intent' });
+    if (!userId) {
+      return res.status(401).json({ error: 'Authentication required to create a payment intent' });
     }
-  });
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amount || 999,
+      currency: 'usd',
+      receipt_email: email,         // ✅ attach email
+      metadata: { email: email || '', userId },
+      automatic_payment_methods: { enabled: true },
+    });
+
+    res.json({ clientSecret: paymentIntent.client_secret });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create payment intent' });
+  }
+});
 
   // Support chat endpoint
   app.post("/api/support-chat", async (req, res) => {
@@ -457,12 +564,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create Stripe Checkout Session with Apple Pay and Google Pay
-  app.post('/api/create-checkout-session', async (req, res) => {
+  app.post('/api/create-checkout-session', optionalAuth, async (req: any, res) => {
     try {
       const { email, payment_method, success_url, cancel_url } = req.body;
+      const userId = getRequestUserId(req);
 
       if (!email) {
         return res.status(400).json({ error: 'Email is required' });
+      }
+
+      if (!userId) {
+        return res.status(401).json({ error: 'Authentication required to create a checkout session' });
       }
 
       let sessionConfig: any = {
@@ -483,12 +595,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
           },
         ],
         mode: 'subscription',
-        success_url: success_url || '${process.env.FRONTEND_URL}/welcome-premium',
-        cancel_url: cancel_url || '${process.env.FRONTEND_URL}/subscribe',
+        success_url: success_url || `${process.env.FRONTEND_URL}/welcome-premium`,
+        cancel_url: cancel_url || `${process.env.FRONTEND_URL}/subscribe`,
         customer_email: email,
+        client_reference_id: userId,
         metadata: {
           email: email,
-          payment_method: payment_method || 'card'
+          payment_method: payment_method || 'card',
+          userId,
+        },
+        subscription_data: {
+          metadata: {
+            email,
+            userId,
+          }
         },
       };
 
@@ -520,39 +640,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Payment success endpoint for handling completed payments
-  app.post('/api/payment-success', async (req, res) => {
-    try {
-      const { payment_intent_id, email } = req.body;
-      
-      if (!payment_intent_id || !email) {
-        return res.status(400).json({ error: 'Missing payment_intent_id or email' });
-      }
+  app.post('/api/payment-success', optionalAuth, async (req: any, res) => {
+  try {
+    const { payment_intent_id, email } = req.body;
 
-      // Verify payment with Stripe
-      const paymentIntent = await stripe.paymentIntents.retrieve(payment_intent_id);
-      
-      if (paymentIntent.status === 'succeeded') {
-        // Find user by email and activate premium
-        const users = await storage.getUserByEmail(email);
-        if (users.length > 0) {
-          await storage.updateSubscriptionStatus(users[0].id, 'premium');
-          console.log(`Premium activated for user: ${email}`);
-          
-          // Send welcome email
-          await sendPremiumUpgradeEmail(email);
-          
-          res.json({ success: true, message: 'Premium access activated' });
-        } else {
-          res.status(404).json({ error: 'User not found' });
-        }
-      } else {
-        res.status(400).json({ error: 'Payment not completed' });
-      }
-    } catch (error) {
-      console.error('Payment success error:', error);
-      res.status(500).json({ error: 'Failed to process payment success' });
+    if (!payment_intent_id) {
+      return res.status(400).json({ error: 'Missing payment_intent_id' });
     }
-  });
+
+    const paymentIntent = await stripe.paymentIntents.retrieve(payment_intent_id);
+
+    if (paymentIntent.status !== 'succeeded') {
+      return res.status(400).json({ error: 'Payment not completed' });
+    }
+
+    const resolvedUser = await resolvePaymentUser({
+      req,
+      metadataUserId: paymentIntent.metadata?.userId,
+      email: email || paymentIntent.receipt_email || paymentIntent.metadata?.email || null,
+    });
+    
+    // ✅ If user not in DB, create them first
+    if (!resolvedUser) {
+      return res.status(404).json({ error: 'No existing user found for successful payment' });
+    }
+
+    logPaymentResolution('payment-success', resolvedUser.lookup, resolvedUser.user.id);
+
+    const updatedUser = await activatePremiumUser(resolvedUser.user.id, 'payment-success', {
+      stripeCustomerId: typeof paymentIntent.customer === 'string' ? paymentIntent.customer : null,
+      stripeSubscriptionId: null,
+    });
+
+    if ((req.session as any)?.standaloneUserId === updatedUser.id) {
+      (req.session as any).standaloneUser = updatedUser;
+    }
+
+    if (updatedUser.email) {
+      await sendPremiumUpgradeEmail(updatedUser.email);
+    }
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Payment success error:', error);
+    res.status(500).json({ error: 'Failed to process payment' });
+  }
+});
+// Cancel subscription route
+app.post('/api/cancel-subscription', optionalAuth, async (req: any, res) => {
+  try {
+    const userId = getRequestUserId(req);
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const user = await storage.getUser(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (!['premium', 'premium_plus'].includes(user.subscriptionStatus || '')) {
+      return res.status(400).json({ error: 'No active subscription to cancel' });
+    }
+
+    // Cancel on Stripe's side if a subscription ID exists
+    if (user.stripeSubscriptionId) {
+      await stripe.subscriptions.cancel(user.stripeSubscriptionId);
+      console.log(`[payments] cancel-subscription: cancelled Stripe subscription ${user.stripeSubscriptionId} for user ${userId}`);
+    } else {
+      console.warn(`[payments] cancel-subscription: user ${userId} has no stripeSubscriptionId, updating DB only`);
+    }
+
+    // Update DB status (mirrors what the webhook does)
+    await storage.updateSubscriptionStatus(userId, 'free');
+
+    res.json({ success: true, message: 'Subscription cancelled successfully' });
+  } catch (error: any) {
+    console.error('Cancel subscription error:', error);
+    res.status(500).json({ error: error.message || 'Failed to cancel subscription' });
+  }
+});
 
   // Stripe webhook for handling subscription events
   app.post('/api/webhook/stripe', async (req, res) => {
@@ -568,32 +737,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       switch (event.type) {
-        case 'payment_intent.succeeded':
-          const paymentIntent = event.data.object as Stripe.PaymentIntent;
-          const customerEmail = paymentIntent.receipt_email || paymentIntent.metadata?.email;
-          
-          if (customerEmail) {
-            const users = await storage.getUserByEmail(customerEmail);
-            if (users.length > 0) {
-              await storage.updateSubscriptionStatus(users[0].id, 'premium');
-              console.log(`Premium activated via webhook for: ${customerEmail}`);
-              await sendPremiumUpgradeEmail(customerEmail);
-            }
+        case 'checkout.session.completed': {
+          const session = event.data.object as Stripe.Checkout.Session;
+          const resolvedUser = await resolvePaymentUser({
+            metadataUserId: session.metadata?.userId || session.client_reference_id,
+            email: session.customer_details?.email || session.metadata?.email || null,
+          });
+
+          if (!resolvedUser) {
+            console.warn('[payments] webhook checkout.session.completed: unable to resolve user');
+            break;
+          }
+
+          logPaymentResolution('webhook checkout.session.completed', resolvedUser.lookup, resolvedUser.user.id);
+          const updatedUser = await activatePremiumUser(resolvedUser.user.id, 'webhook checkout.session.completed', {
+            stripeCustomerId: typeof session.customer === 'string' ? session.customer : null,
+            stripeSubscriptionId: typeof session.subscription === 'string' ? session.subscription : null,
+          });
+
+          if (updatedUser.email) {
+            await sendPremiumUpgradeEmail(updatedUser.email);
           }
           break;
+        }
 
-        case 'invoice.payment_succeeded':
+        case 'payment_intent.succeeded': {
+          const paymentIntent = event.data.object as Stripe.PaymentIntent;
+          const resolvedUser = await resolvePaymentUser({
+            metadataUserId: paymentIntent.metadata?.userId,
+            email: paymentIntent.receipt_email || paymentIntent.metadata?.email || null,
+          });
+
+          if (!resolvedUser) {
+            console.warn('[payments] webhook payment_intent.succeeded: unable to resolve user');
+            break;
+          }
+
+          logPaymentResolution('webhook payment_intent.succeeded', resolvedUser.lookup, resolvedUser.user.id);
+          const updatedUser = await activatePremiumUser(resolvedUser.user.id, 'webhook payment_intent.succeeded', {
+            stripeCustomerId: typeof paymentIntent.customer === 'string' ? paymentIntent.customer : null,
+            stripeSubscriptionId: null,
+          });
+
+          if (updatedUser.email) {
+            await sendPremiumUpgradeEmail(updatedUser.email);
+          }
+          break;
+        }
+
+        case 'invoice.payment_succeeded': {
           const invoice = event.data.object as any;
           if (invoice.subscription) {
             const users = await storage.getUserByStripeCustomerId(invoice.customer as string);
             if (users.length > 0) {
-              await storage.updateSubscriptionStatus(users[0].id, 'premium');
-              if (users[0].email) {
-                await sendPremiumUpgradeEmail(users[0].email);
+              const updatedUser = await activatePremiumUser(users[0].id, 'webhook invoice.payment_succeeded', {
+                stripeCustomerId: invoice.customer as string,
+                stripeSubscriptionId: invoice.subscription as string,
+              });
+              if (updatedUser.email) {
+                await sendPremiumUpgradeEmail(updatedUser.email);
               }
+            } else {
+              console.warn(`[payments] webhook invoice.payment_succeeded: no user found for customer ${invoice.customer}`);
             }
           }
           break;
+        }
           
         case 'customer.subscription.deleted':
           const subscription = event.data.object as Stripe.Subscription;

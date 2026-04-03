@@ -5,9 +5,10 @@ import type { Request, Response, NextFunction } from "express";
 export const unifiedAuth = (req: Request, res: Response, next: NextFunction) => {
   // Check Firebase authentication first (highest priority)
   if ((req.session as any)?.firebaseUser) {
+    const firebaseDbUserId = (req.session as any)?.firebaseDbUserId || (req.session as any).firebaseUser.uid;
     (req as any).user = { 
       claims: { 
-        sub: (req.session as any).firebaseUser.uid,
+        sub: firebaseDbUserId,
         email: (req.session as any).firebaseUser.email,
         name: (req.session as any).firebaseUser.name
       } 
@@ -43,9 +44,10 @@ export const unifiedAuth = (req: Request, res: Response, next: NextFunction) => 
 export const optionalAuth = (req: Request, res: Response, next: NextFunction) => {
   // Check Firebase authentication first (highest priority)
   if ((req.session as any)?.firebaseUser) {
+    const firebaseDbUserId = (req.session as any)?.firebaseDbUserId || (req.session as any).firebaseUser.uid;
     (req as any).user = { 
       claims: { 
-        sub: (req.session as any).firebaseUser.uid,
+        sub: firebaseDbUserId,
         email: (req.session as any).firebaseUser.email,
         name: (req.session as any).firebaseUser.name
       } 

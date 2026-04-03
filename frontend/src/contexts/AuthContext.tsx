@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     // Send Firebase ID token to backend to create session
     const idToken = await user.getIdToken();
-    await fetch(`/auth/firebase-login`, {
+    await fetch(`api/auth/firebase-login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -59,7 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     // Send Firebase ID token to backend to create session
     const idToken = await user.getIdToken();
-    await fetch(`/auth/firebase-login`, {
+    await fetch(`api/auth/firebase-login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -77,7 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     // Send Firebase ID token to backend to create session
     const idToken = await user.getIdToken();
-    await fetch(`/auth/firebase-login`, {
+    await fetch(`api/auth/firebase-login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -88,7 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function logout() {
     // Clear backend session
-    await fetch(`/auth/logout`, {
+    await fetch(`api/auth/logout`, {
       method: "POST",
     });
     
@@ -114,7 +114,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Sync with backend session when Firebase auth state changes
         try {
           const idToken = await user.getIdToken();
-          await fetch(`/auth/firebase-sync`, {
+          await fetch(`api/auth/firebase-sync`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

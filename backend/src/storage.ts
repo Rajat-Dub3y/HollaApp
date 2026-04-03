@@ -27,6 +27,12 @@ export interface IStorage {
   createSupportChat(chat: InsertSupportChat): Promise<SupportChat>;
   updateUserStripeInfo(userId: string, customerId: string, subscriptionId: string): Promise<User>;
   updateSubscriptionStatus(userId: string, status: string): Promise<User>;
+  activatePremiumSubscription(userId: string, data: {
+    stripeCustomerId?: string | null;
+    stripeSubscriptionId?: string | null;
+    subscriptionStatus?: string;
+    subscriptionStartDate?: Date;
+  }): Promise<User>;
   getUserByStripeCustomerId(customerId: string): Promise<User[]>;
   getUserByEmail(email: string): Promise<User[]>;
   generateReferralCode(userId: string): Promise<User>;
@@ -141,6 +147,34 @@ export class DatabaseStorage implements IStorage {
         subscriptionStatus: status,
         updatedAt: new Date(),
       })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async activatePremiumSubscription(userId: string, data: {
+    stripeCustomerId?: string | null;
+    stripeSubscriptionId?: string | null;
+    subscriptionStatus?: string;
+    subscriptionStartDate?: Date;
+  }): Promise<User> {
+    const updateData: any = {
+      subscriptionStatus: data.subscriptionStatus ?? "premium",
+      subscriptionStartDate: data.subscriptionStartDate ?? new Date(),
+      updatedAt: new Date(),
+    };
+
+    if (data.stripeCustomerId !== undefined) {
+      updateData.stripeCustomerId = data.stripeCustomerId;
+    }
+
+    if (data.stripeSubscriptionId !== undefined) {
+      updateData.stripeSubscriptionId = data.stripeSubscriptionId;
+    }
+
+    const [user] = await db
+      .update(users)
+      .set(updateData)
       .where(eq(users.id, userId))
       .returning();
     return user;
