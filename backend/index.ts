@@ -41,7 +41,7 @@ app.use(
     },
   })
 );
-/*app.use(
+app.use(
   cors({
     origin: [
       "http://localhost:5173",
@@ -49,7 +49,7 @@ app.use(
     ],
     credentials: true,
   })
-);*/
+);
 
 // Register API routes
 registerRoutes(app);
