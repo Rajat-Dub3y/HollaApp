@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   User,
   signInWithEmailAndPassword,
@@ -36,6 +37,7 @@ export function useAuth() {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   async function signup(email: string, password: string, displayName?: string) {
     const { user } = await createUserWithEmailAndPassword(auth, email, password);
@@ -56,9 +58,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function login(email: string, password: string) {
     const { user } = await signInWithEmailAndPassword(auth, email, password);
-    
-    // Send Firebase ID token to backend to create session
+
     const idToken = await user.getIdToken();
+
     await fetch(`api/auth/firebase-login`, {
       method: "POST",
       headers: {
@@ -66,6 +68,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
       body: JSON.stringify({ idToken }),
     });
+
+    // 🔥 CRITICAL FIX
+    queryClient.invalidateQueries({ queryKey: ["/api/session-user"] });
   }
 
   async function loginWithGoogle() {
@@ -87,13 +92,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function logout() {
-    // Clear backend session
     await fetch(`api/auth/logout`, {
       method: "POST",
     });
-    
-    // Sign out from Firebase
+
     await signOut(auth);
+
+    queryClient.removeQueries({ queryKey: ["/api/session-user"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/session-user"] });
   }
 
   async function resetPassword(email: string) {

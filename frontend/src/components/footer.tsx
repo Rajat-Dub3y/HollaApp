@@ -5,22 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MessageSquare } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { usePremiumAccess } from "@/hooks/usePremiumAccess";
  
 export default function Footer() {
   const [email, setEmail] = useState("");
-  const [isPremium, setIsPremium] = useState(false);
+
+  const { isPremium } = usePremiumAccess();
   const { toast } = useToast();
  
-  useEffect(() => {
-    fetch("/api/session-user", { credentials: "include" })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data?.subscriptionStatus === "premium" || data?.subscriptionStatus === "premium_plus") {
-          setIsPremium(true);
-        }
-      })
-      .catch(() => null);
-  }, []);
+
  
   const newsletterMutation = useMutation({
     mutationFn: async (email: string) => {

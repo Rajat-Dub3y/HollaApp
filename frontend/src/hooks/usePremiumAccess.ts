@@ -19,16 +19,16 @@ export function usePremiumAccess() {
       return response.json();
     },
     retry: false,
-    staleTime: 60 * 1000,
+    staleTime: 0,
   });
 
-  const status = (user as any)?.subscriptionStatus;
+  const status = user?.subscriptionStatus;
   const isPremium = status === "premium" || status === "premium_plus";
   const isPremiumPlus = status === "premium_plus";
 
   return {
     user,
-    isLoading,
+    loading: isLoading,
     isPremium,
     isPremiumPlus,
   };
