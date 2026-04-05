@@ -46,6 +46,7 @@ app.use(
     origin: [
       "http://localhost:5173",
       "https://holla-app-nu.vercel.app",
+      "https://www.holla-ai.com/"
     ],
     credentials: true,
   })

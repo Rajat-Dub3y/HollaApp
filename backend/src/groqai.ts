@@ -100,29 +100,51 @@ export async function generateReplies(
   }
 
   try {
-    const systemPrompt = `You are a dating assistant. Generate 3 replies with tone: ${tone}. Return JSON:
+    const systemPrompt = `You are a dating reply generator. 
+The user will give you a message they RECEIVED from their match.
+Your job is to write 3 different replies they can SEND BACK to that match.
+Write in tone: ${tone}.
+${language === "hi" ? "Write replies in Hindi (Hinglish is fine)." : "Write replies in English."}
 
+Rules:
+- Each reply should sound natural, like a real person texting
+- Do NOT explain anything. Do NOT add commentary. Just write the replies.
+- Replies should be short (1-3 sentences max)
+- Each reply must be meaningfully different from the others
+
+Return ONLY this JSON, no extra text:
 {
- "replies":[
-   {"reply":"text","confidence":90},
-   {"reply":"text","confidence":85},
-   {"reply":"text","confidence":88}
- ],
- "tone":"${tone}"
+  "replies": [
+    {"reply": "...", "confidence": 90},
+    {"reply": "...", "confidence": 85},
+    {"reply": "...", "confidence": 88}
+  ],
+  "tone": "${tone}"
 }`;
 
     const response = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: message }
+        { 
+          role: "user", 
+          content: `My match sent me this message: "${message}"\n\nGive me 3 replies I can send back.` 
+        }
       ],
       response_format: { type: "json_object" },
       temperature: 0.8,
       max_tokens: 400
     });
 
-    return JSON.parse(response.choices[0].message.content || "{}");
+    const parsed = JSON.parse(response.choices[0].message.content || "{}");
+
+    // Safety check — ensure shape is correct
+    if (!parsed.replies || !Array.isArray(parsed.replies)) {
+      throw new Error("Invalid response shape from Groq");
+    }
+
+    return parsed as GenerateRepliesResponse;
+
   } catch (error) {
     console.error("Groq reply generation error:", error);
     throw new Error("Failed to generate replies");
