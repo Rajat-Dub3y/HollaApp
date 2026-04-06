@@ -30,7 +30,8 @@ export default function NativeMobilePayments({ email, onPaymentSuccess }: Native
       total: {
           label: 'Holla Premium - $1.00/month',
           amount: 100,
-
+      }
+    });
     try {
       const canMakePayment = await paymentRequest.canMakePayment();
       console.log('Payment capabilities:', canMakePayment);
