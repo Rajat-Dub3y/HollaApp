@@ -47,7 +47,7 @@ export default function WalletPaymentSystem({ email, onPaymentSuccess }: WalletP
         currency: 'usd',
         total: {
           label: 'Holla Premium Monthly',
-          amount: 10,
+          amount: 100,
         },
         requestPayerEmail: true,
         requestPayerName: true,
@@ -74,7 +74,7 @@ export default function WalletPaymentSystem({ email, onPaymentSuccess }: WalletP
           const paymentResponse = await fetch('/api/standalone-payment-intent', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, amount: 10 }),
+            body: JSON.stringify({ email, amount: 100 }),
             credentials: 'include'
           });
 

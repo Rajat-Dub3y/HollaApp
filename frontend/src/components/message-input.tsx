@@ -169,7 +169,6 @@ export default function MessageInput({ onRepliesGenerated }: MessageInputProps) 
                   }
                   setSelectedTone(option.value);
                 }}
-                disabled={option.isPremium && !isPremium}
                 className={`bg-white hover:bg-purple-50 border rounded-xl p-4 transition-all duration-300 group relative ${
                   selectedTone === option.value 
                     ? 'border-[#7C3AED] bg-purple-50' 

@@ -256,16 +256,21 @@ const PaymentForm = ({ email, clientSecret, onSuccess }: SimplePaymentFormProps)
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="p-4 border border-gray-300 rounded-lg">
+        <div className="p-4 border border-gray-300 rounded-lg bg-white">
           <CardElement
             options={{
+              hidePostalCode: true,
               style: {
                 base: {
-                  fontSize: '16px',
+                  fontSize: '14px',
                   color: '#424770',
+                  fontFamily: 'system-ui, sans-serif',
                   '::placeholder': {
                     color: '#aab7c4',
                   },
+                },
+                invalid: {
+                  color: '#e53e3e',
                 },
               },
             }}

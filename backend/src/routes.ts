@@ -488,7 +488,7 @@ app.post('/api/create-subscription', async (req: any, res) => {
 
     // 🔥 CREATE PAYMENT INTENT (THIS FIXES EVERYTHING)
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: 10, // ⚠️ must match your price ($0.10 → 10 cents)
+      amount: 100, // ⚠️ must match your price ($1.00 → 100 cents)
       currency: "usd",
       customer: (customer as any).id,
       automatic_payment_methods: {
@@ -586,7 +586,7 @@ app.post('/api/create-payment-intent', optionalAuth, async (req: any, res) => {
                 name: 'Holla Premium Subscription',
                 description: 'Unlimited AI-powered replies and advanced conversation insights',
               },
-              unit_amount: 10, // $0.10
+              unit_amount: 100, // $1.00
               recurring: {
                 interval: 'month',
               },

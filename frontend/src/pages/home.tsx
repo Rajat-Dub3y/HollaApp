@@ -14,6 +14,7 @@ import { MessageSquare, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { analytics } from "@/lib/analytics";
 import { Link } from "wouter";
+import { useLocation } from "react-router-dom";
 
 interface GeneratedReply {
   reply: string;
