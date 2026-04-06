@@ -51,11 +51,11 @@ const MobilePaymentForm = ({ email, clientSecret }: { email: string; clientSecre
         currency: 'usd',
         total: {
           label: 'Holla Premium',
-          amount: 999,
+          amount: 10,
         },
         displayItems: [{
           label: 'Monthly Subscription',
-          amount: 999,
+          amount: 10,
         }],
         requestPayerName: false,
         requestPayerEmail: false,

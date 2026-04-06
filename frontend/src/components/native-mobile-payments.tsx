@@ -28,8 +28,8 @@ export default function NativeMobilePayments({ email, onPaymentSuccess }: Native
       country: 'US',
       currency: 'usd',
       total: {
-        label: 'Holla Premium - $9.99/month',
-        amount: 999,
+        label: 'Holla Premium - $0.10/month',
+        amount: 10,
       },
       requestPayerEmail: true,
       requestPayerName: true,
@@ -64,8 +64,8 @@ export default function NativeMobilePayments({ email, onPaymentSuccess }: Native
         country: 'US',
         currency: 'usd',
         total: {
-          label: 'Holla Premium - $9.99/month',
-          amount: 999,
+          label: 'Holla Premium - $0.10/month',
+          amount: 10,
         },
         requestPayerEmail: true,
         requestPayerName: true,
@@ -76,7 +76,7 @@ export default function NativeMobilePayments({ email, onPaymentSuccess }: Native
           const response = await fetch('/api/standalone-payment-intent', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, amount: 999 })
+            body: JSON.stringify({ email, amount: 10 })
           });
           
           const { clientSecret } = await response.json();

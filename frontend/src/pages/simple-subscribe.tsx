@@ -110,7 +110,7 @@ export default function SimpleSubscribe() {
     setIsAuthenticated(true);
     
     // Create payment intent after login
-    apiRequest("POST", "/api/standalone-payment-intent", { amount: 999, email: userEmail })
+    apiRequest("POST", "/api/standalone-payment-intent", { amount: 10, email: userEmail })
       .then((res) => res.json())
       .then((data) => {
         if (data.clientSecret) {

@@ -162,7 +162,7 @@ export default function PremiumCheckout() {
       const userEmail = currentUser?.email;
 
       // Create payment intent
-      apiRequest("POST", "/api/create-payment-intent", { amount: 999, email: userEmail })
+      apiRequest("POST", "/api/create-payment-intent", { amount: 10, email: userEmail })
         .then((res) => res.json())
         .then((data) => {
           setClientSecret(data.clientSecret);

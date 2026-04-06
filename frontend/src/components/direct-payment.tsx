@@ -27,7 +27,7 @@ const CheckoutForm = ({ email, clientSecret }: { email: string; clientSecret: st
         currency: 'usd',
         total: {
           label: 'Holla Premium Subscription',
-          amount: 999,
+          amount: 10,
         },
         requestPayerName: true,
         requestPayerEmail: true,

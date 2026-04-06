@@ -31,7 +31,7 @@ export default function EnhancedMobilePayments({ email, onPaymentSuccess }: Enha
         currency: 'usd',
         total: {
           label: 'Holla Premium - Monthly Subscription',
-          amount: 999,
+          amount: 10,
         },
         requestPayerEmail: true,
         requestPayerName: true,
@@ -46,7 +46,7 @@ export default function EnhancedMobilePayments({ email, onPaymentSuccess }: Enha
           const response = await fetch('/api/standalone-payment-intent', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, amount: 999 })
+            body: JSON.stringify({ email, amount: 10 })
           });
           
           if (!response.ok) {
