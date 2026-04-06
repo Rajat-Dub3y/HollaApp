@@ -73,6 +73,7 @@ export default function ProductionMobileWallets({ email, onPaymentSuccess }: Pro
             description: error.message,
             variant: "destructive",
           });
+          setTimeout(() => window.location.href = '/', 2000);
         } else {
           ev.complete('success');
           
@@ -94,6 +95,7 @@ export default function ProductionMobileWallets({ email, onPaymentSuccess }: Pro
           description: "Mobile payment failed. Please try card payment.",
           variant: "destructive",
         });
+        setTimeout(() => window.location.href = '/', 2000);
       } finally {
         setIsProcessing(false);
       }

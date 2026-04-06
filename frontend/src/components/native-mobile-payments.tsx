@@ -95,6 +95,7 @@ export default function NativeMobilePayments({ email, onPaymentSuccess }: Native
               description: error.message,
               variant: "destructive",
             });
+            setTimeout(() => window.location.href = '/', 2000);
           } else {
             ev.complete('success');
             toast({
@@ -110,6 +111,7 @@ export default function NativeMobilePayments({ email, onPaymentSuccess }: Native
             description: "Payment processing failed. Please try again.",
             variant: "destructive",
           });
+          setTimeout(() => window.location.href = '/', 2000);
         }
       });
 

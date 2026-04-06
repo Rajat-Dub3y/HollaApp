@@ -67,6 +67,7 @@ export default function MobileWalletButtons({ email, onPaymentSuccess }: MobileW
               description: error.message,
               variant: "destructive",
             });
+            setTimeout(() => window.location.href = '/', 2000);
           } else {
             ev.complete('success');
             
@@ -84,6 +85,7 @@ export default function MobileWalletButtons({ email, onPaymentSuccess }: MobileW
             description: "An unexpected error occurred. Please try again.",
             variant: "destructive",
           });
+          setTimeout(() => window.location.href = '/', 2000);
         } finally {
           setIsProcessing(false);
         }

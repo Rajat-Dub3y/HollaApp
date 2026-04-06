@@ -39,6 +39,7 @@ const SubscribeForm = ({ email }: { email: string }) => {
         description: error.message,
         variant: "destructive",
       });
+      setTimeout(() => window.location.href = '/', 2000);
     } else {
       toast({
         title: "Welcome To Premium!",

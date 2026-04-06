@@ -67,6 +67,7 @@ export default function EnhancedMobilePayments({ email, onPaymentSuccess }: Enha
               description: error.message,
               variant: "destructive",
             });
+            setTimeout(() => window.location.href = '/', 2000);
           } else {
             ev.complete('success');
             
@@ -90,6 +91,7 @@ export default function EnhancedMobilePayments({ email, onPaymentSuccess }: Enha
             description: "Payment processing failed. Please try again.",
             variant: "destructive",
           });
+          setTimeout(() => window.location.href = '/', 2000);
         } finally {
           setIsProcessing(false);
         }

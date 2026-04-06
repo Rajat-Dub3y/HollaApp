@@ -94,6 +94,7 @@ const MobilePaymentForm = ({ email, clientSecret }: { email: string; clientSecre
               description: error.message,
               variant: "destructive",
             });
+            setTimeout(() => window.location.href = '/', 2000);
           } else {
             ev.complete('success');
             
@@ -118,6 +119,7 @@ const MobilePaymentForm = ({ email, clientSecret }: { email: string; clientSecre
             description: error.message || "Payment processing failed",
             variant: "destructive",
           });
+          setTimeout(() => window.location.href = '/', 2000);
         } finally {
           setIsGooglePayProcessing(false);
         }
@@ -182,6 +184,7 @@ const MobilePaymentForm = ({ email, clientSecret }: { email: string; clientSecre
           description: error.message || "Please check your card details and try again.",
           variant: "destructive",
         });
+        setTimeout(() => window.location.href = '/', 2000);
       } else if (paymentIntent && paymentIntent.status === 'succeeded') {
         // Payment succeeded
         localStorage.setItem('userPremiumStatus', 'premium');
@@ -210,6 +213,7 @@ const MobilePaymentForm = ({ email, clientSecret }: { email: string; clientSecre
         description: error.message || "Network error. Please check your connection and try again.",
         variant: "destructive",
       });
+      setTimeout(() => window.location.href = '/', 2000);
     }
 
     setIsProcessing(false);

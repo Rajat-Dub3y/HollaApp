@@ -154,8 +154,6 @@ export default function NoOAuthSubscribe() {
           email={firebaseUser?.email || ""} 
           clientSecret={clientSecret} 
         />
-        
-        <MobilePaymentDebug />
       </div>
     </div>
   );

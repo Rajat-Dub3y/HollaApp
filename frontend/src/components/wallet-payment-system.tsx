@@ -96,6 +96,7 @@ export default function WalletPaymentSystem({ email, onPaymentSuccess }: WalletP
               description: error.message,
               variant: "destructive",
             });
+            setTimeout(() => window.location.href = '/', 2000);
           } else {
             ev.complete('success');
             
@@ -117,6 +118,7 @@ export default function WalletPaymentSystem({ email, onPaymentSuccess }: WalletP
             description: error.message || "Mobile payment failed",
             variant: "destructive",
           });
+          setTimeout(() => window.location.href = '/', 2000);
         } finally {
           setIsProcessing(false);
         }

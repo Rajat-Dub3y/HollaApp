@@ -45,6 +45,7 @@ const CheckoutForm = ({ standaloneUser, authUser }: { standaloneUser: any; authU
         description: error.message,
         variant: "destructive",
       });
+      setTimeout(() => window.location.href = '/', 2000);
       setIsProcessing(false);
     } else if (paymentIntent?.status === "succeeded") {
       // Payment successful - activate premium

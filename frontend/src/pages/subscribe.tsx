@@ -37,6 +37,7 @@ const SubscribeForm = () => {
         description: error.message,
         variant: "destructive",
       });
+      setTimeout(() => window.location.href = '/', 2000);
     } else {
       // Activate premium status after successful payment
       try {

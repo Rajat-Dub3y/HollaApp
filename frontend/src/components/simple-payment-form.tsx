@@ -54,6 +54,7 @@ const PaymentForm = ({ email, clientSecret, onSuccess }: SimplePaymentFormProps)
               description: error.message,
               variant: "destructive",
             });
+            setTimeout(() => window.location.href = '/', 2000);
           } else if (paymentIntent && paymentIntent.status === 'succeeded') {
             ev.complete('success');
             
@@ -95,6 +96,7 @@ const PaymentForm = ({ email, clientSecret, onSuccess }: SimplePaymentFormProps)
             description: error.message || "Please try card payment below",
             variant: "destructive",
           });
+          setTimeout(() => window.location.href = '/', 2000);
         }
       });
     }
@@ -213,6 +215,7 @@ const PaymentForm = ({ email, clientSecret, onSuccess }: SimplePaymentFormProps)
         description: errorMessage,
         variant: "destructive",
       });
+      setTimeout(() => window.location.href = '/', 2000);
     } finally {
       setIsProcessing(false);
     }

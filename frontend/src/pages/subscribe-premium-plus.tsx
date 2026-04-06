@@ -35,6 +35,7 @@ const SubscribeForm = () => {
         description: error.message,
         variant: "destructive",
       });
+      setTimeout(() => window.location.href = '/', 2000);
     } else {
       toast({
         title: "Payment Successful",
