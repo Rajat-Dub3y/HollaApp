@@ -26,7 +26,7 @@ export default function MobilePaymentDebug() {
         const pr = stripe.paymentRequest({
           country: 'US',
           currency: 'usd',
-          total: { label: 'Test', amount: 100 }
+          total: { label: 'Test', amount: 999 }
         });
 
         const result = await pr.canMakePayment();
@@ -126,10 +126,7 @@ export default function MobilePaymentDebug() {
               const pr = stripe.paymentRequest({
                 country: 'US',
                 currency: 'usd',
-                total: { label: 'Test Payment', amount: 100 }
-              });
-              
-              await pr.show();
+            total: { label: 'Test Payment', amount: 999 }
               toast({
                 title: "Test Payment Triggered",
                 description: "Payment dialog should appear",

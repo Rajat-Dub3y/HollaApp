@@ -140,7 +140,7 @@ export default function PaymentTestComponent() {
       try {
         const response = await apiRequest("POST", "/api/standalone-payment-intent", {
           email: "test@example.com",
-          amount: 100
+          amount: 999
         });
         
         const data = await response.json();

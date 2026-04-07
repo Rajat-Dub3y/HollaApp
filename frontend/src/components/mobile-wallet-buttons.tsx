@@ -23,8 +23,8 @@ export default function MobileWalletButtons({ email, onPaymentSuccess }: MobileW
         country: 'US',
         currency: 'usd',
         total: {
-          label: 'Holla Premium - $1.00/month',
-          amount: 100,
+          label: 'Holla Premium - $9.99/month',
+          amount: 999,
         },
         requestPayerName: true,
         requestPayerEmail: true,
@@ -50,7 +50,7 @@ export default function MobileWalletButtons({ email, onPaymentSuccess }: MobileW
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
               email: email,
-              amount: 100
+              amount: 999
             })
           });
           
