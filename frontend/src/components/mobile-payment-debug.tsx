@@ -117,27 +117,42 @@ export default function MobilePaymentDebug() {
           Updated: {debugInfo.timestamp?.slice(11, 19)}
         </div>
       </div>
-
       <Button
         onClick={async () => {
           const stripe = await stripePromise;
-          if (stripe) {
-            try {
-              const pr = stripe.paymentRequest({
-                country: 'US',
-                currency: 'usd',
-            total: { label: 'Test Payment', amount: 999 }
-              toast({
-                title: "Test Payment Triggered",
-                description: "Payment dialog should appear",
-              });
-            } catch (error: any) {
-              toast({
-                title: "Test Failed",
-                description: error.message,
-                variant: "destructive",
-              });
+
+          if (!stripe) return;
+
+          try {
+            const paymentRequest = stripe.paymentRequest({
+              country: "US",
+              currency: "usd",
+              total: {
+                label: "Test Payment",
+                amount: 999,
+              },
+              requestPayerName: true,
+              requestPayerEmail: true,
+            });
+
+            const result = await paymentRequest.canMakePayment();
+
+            if (result) {
+              paymentRequest.show();
+            } else {
+              throw new Error("Payment Request not available (no Apple Pay / Google Pay)");
             }
+
+            toast({
+              title: "Payment UI Triggered",
+              description: "Check your device for payment popup",
+            });
+          } catch (error: any) {
+            toast({
+              title: "Test Failed",
+              description: error.message,
+              variant: "destructive",
+            });
           }
         }}
         className="w-full mt-3 text-xs py-1"
