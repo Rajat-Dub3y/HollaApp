@@ -87,7 +87,7 @@ export default function NoOAuthSubscribe() {
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Quick Start</h2>
               
               {/* 👇 show user email instead of input */}
-              <p className="text-gray-600 truncate text-sm px-2" title={firebaseUser?.email}>
+              <p className="text-gray-600 truncate text-sm px-2" title={firebaseUser?.email ?? ""}>
                 {firebaseUser?.email}
               </p>
             </div>
