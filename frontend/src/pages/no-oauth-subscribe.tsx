@@ -87,15 +87,10 @@ export default function NoOAuthSubscribe() {
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Quick Start</h2>
               
               {/* 👇 show user email instead of input */}
-              <p className="text-gray-600">
+              <p className="text-gray-600 truncate text-sm px-2" title={firebaseUser?.email}>
                 {firebaseUser?.email}
               </p>
-
-              <p className="text-sm text-green-600 mt-2">
-                No extra input required
-              </p>
             </div>
-
             <div className="space-y-4">
               <Button
                 onClick={handleStartPayment}
@@ -106,7 +101,7 @@ export default function NoOAuthSubscribe() {
                   <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full" />
                 ) : (
                   <>
-                    Continue to Payment <ArrowRight className="h-4 w-4" />
+                    Ready To Up Your Game ? <ArrowRight className="h-4 w-4" />
                   </>
                 )}
               </Button>
