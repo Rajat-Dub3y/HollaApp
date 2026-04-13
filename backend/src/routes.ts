@@ -7,6 +7,8 @@ import { generateReplySchema, supportChatSchema } from "./schema";
 import { generateReplies, generateRomeoResponse, analyzeMessagePattern, generateRomeoDateingCoachResponse } from "./groqai";
 import { sendWelcomeEmail, sendFeedbackNotification, sendFeedbackAutoReply, sendPremiumUpgradeEmail, sendPremiumPlusUpgradeEmail, sendDripCampaignEmail, sendRefundRequestAutoReply, sendRefundRequestNotification } from "./sendgrid";
 import { optionalAuth } from "./unifiedAuth";
+import { sql } from 'drizzle-orm';
+import { db } from './db';
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
@@ -128,7 +130,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Health check for external monitoring
-  app.get('/health', (req, res) => {
+  app.get('/health', async (req, res) => {
+    try {
+      await db.execute(sql`SELECT 1`); // absolute lightest possible query
+    } catch (e) {}
     res.status(200).send('OK');
   });
 

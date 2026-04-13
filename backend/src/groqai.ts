@@ -20,7 +20,7 @@ export async function generateRomeoDateingCoachResponse(message: string): Promis
     const systemPrompt = `You are Romeo, an expert dating coach. Give very short practical advice (1-2 sentences).`;
 
     const response = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: "llama-3.1-8b-instant",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: message }
@@ -41,13 +41,13 @@ export async function generateRomeoResponse(message: string, isPremium = false):
     const systemPrompt = `You are Romeo, a smart dating coach. Give short direct answers.`;
 
     const response = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: "llama-3.1-8b-instant",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: message }
       ],
       temperature: 0.7,
-      max_tokens: 80
+      max_tokens: 60
     });
 
     return response.choices[0].message.content || "How can I help?";
@@ -60,7 +60,7 @@ export async function generateRomeoResponse(message: string, isPremium = false):
 export async function analyzeMessagePattern(message: string) {
   try {
     const response = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: "llama-3.1-8b-instant",
       messages: [
         {
           role: "system",
@@ -123,7 +123,7 @@ Return ONLY this JSON, no extra text:
 }`;
 
     const response = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: "llama-3.1-8b-instant",
       messages: [
         { role: "system", content: systemPrompt },
         { 
