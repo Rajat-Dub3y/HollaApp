@@ -16,6 +16,10 @@ export default function NoOAuthSubscribe() {
   const { toast } = useToast();
 
   const firebaseUser = auth.currentUser;
+  if (!firebaseUser) {
+    setLocation("/login");
+    return null;
+  }
 
   const handleStartPayment = async () => {
     if (!firebaseUser || !firebaseUser.email) {

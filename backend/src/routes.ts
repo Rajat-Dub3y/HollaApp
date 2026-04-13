@@ -340,7 +340,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // TEMPORARY: Allow testing
       const isTestMode = process.env.NODE_ENV === 'development';
       const hasTestTier = req.headers['x-test-tier'] === 'premium' || req.headers['x-test-tier'] === 'premium_plus';
-      
+      if ((req as any).user?.claims?.sub) {
+        const user = await storage.getUser((req as any).user.claims.sub);
+        isPremium = !!(user && ['premium', 'premium_plus'].includes((user as any).subscriptionStatus || ''));
+      }
       
       // Allow testing in development or with test tier header
       isPremium = isPremium || (isTestMode && hasTestTier);
