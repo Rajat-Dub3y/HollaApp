@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -7,18 +7,42 @@ import { useLocation } from "wouter";
 import SimplePaymentForm from "@/components/simple-payment-form";
 import MobilePaymentDebug from "@/components/mobile-payment-debug";
 import { auth } from '@/lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
 export default function NoOAuthSubscribe() {
   const [clientSecret, setClientSecret] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true); // 👈 wait for Firebase
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
-  const firebaseUser = auth.currentUser;
-  if (!firebaseUser) {
-    setLocation("/login");
-    return null;
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setFirebaseUser(user);
+      } else {
+        toast({
+          title: "Please sign in",
+          description: "You need to be logged in to subscribe",
+          variant: "destructive",
+        });
+        setLocation("/signin");
+      }
+      setAuthLoading(false);
+    });
+
+    return () => unsubscribe(); // cleanup
+  }, []);
+
+  // Show spinner while Firebase checks auth state
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full" />
+      </div>
+    );
   }
 
   const handleStartPayment = async () => {
