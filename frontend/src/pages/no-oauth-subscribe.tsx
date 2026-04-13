@@ -5,9 +5,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Mail, ArrowRight } from "lucide-react";
 import { useLocation } from "wouter";
 import SimplePaymentForm from "@/components/simple-payment-form";
-import MobilePaymentDebug from "@/components/mobile-payment-debug";
 import { auth } from '@/lib/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, User } from 'firebase/auth';
 
 export default function NoOAuthSubscribe() {
   const [clientSecret, setClientSecret] = useState("");
