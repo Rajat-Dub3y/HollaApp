@@ -27,7 +27,7 @@ export default function NoOAuthSubscribe() {
           description: "You need to be logged in to subscribe",
           variant: "destructive",
         });
-        setLocation("/signin");
+        setLocation("/login");
       }
       setAuthLoading(false);
     });
