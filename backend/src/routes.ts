@@ -330,45 +330,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Generate replies endpoint with premium validation
-  app.post("/api/generate-replies",optionalAuth, async (req, res) => {
-    try {
-      const { message, tone, language } = generateReplySchema.parse(req.body);
-      
-      // Check premium status
-      let isPremium = false;
-      
-      // TEMPORARY: Allow testing
-      const isTestMode = process.env.NODE_ENV === 'development';
-      const hasTestTier = req.headers['x-test-tier'] === 'premium' || req.headers['x-test-tier'] === 'premium_plus';
-      if ((req as any).user?.claims?.sub) {
-        const user = await storage.getUser((req as any).user.claims.sub);
-        isPremium = !!(user && ['premium', 'premium_plus'].includes((user as any).subscriptionStatus || ''));
-      }
-      
-      // Allow testing in development or with test tier header
-      isPremium = isPremium || (isTestMode && hasTestTier);
-      
-      // Block premium features for non-premium users
-      if (tone === "creative" && !isPremium) {
-        return res.status(403).json({ 
-          message: "Premium Feature - Creative tone requires Premium subscription. Upgrade to access psychology-backed replies.",
-          requiresUpgrade: true
-        });
-      }
-      console.log(`Generating replies for: ${message.substring(0, 50)}... (Premium: ${isPremium})`);
-      
-      const replies = await generateReplies(message, tone, language, isPremium);
-      res.json({ 
-        success: true, 
-        replies: replies.replies,
-        tone: replies.tone 
-      });
-    } catch (error) {
-      console.error("Error generating replies:", error);
-      res.status(500).json({ message: "Failed to generate replies" });
-    }
-  });
+  app.post("/api/generate-replies", optionalAuth, async (req, res) => {
+  const t0 = Date.now();
+  try {
+    console.log("[timing] request received");
 
+    const { message, tone, language } = generateReplySchema.parse(req.body);
+    console.log(`[timing] schema parse: ${Date.now() - t0}ms`);
+
+    let isPremium = false;
+    const isTestMode = process.env.NODE_ENV === 'development';
+    const hasTestTier = req.headers['x-test-tier'] === 'premium' || req.headers['x-test-tier'] === 'premium_plus';
+    
+    if ((req as any).user?.claims?.sub) {
+      console.log(`[timing] starting DB lookup: ${Date.now() - t0}ms`);
+      const user = await storage.getUser((req as any).user.claims.sub);
+      console.log(`[timing] DB lookup done: ${Date.now() - t0}ms`); // 👈 if this is 20s, it's Neon
+      isPremium = !!(user && ['premium', 'premium_plus'].includes((user as any).subscriptionStatus || ''));
+    } else {
+      console.log("[timing] no user session, skipping DB lookup");
+    }
+
+    isPremium = isPremium || (isTestMode && hasTestTier);
+
+    if (tone === "creative" && !isPremium) {
+      return res.status(403).json({ 
+        message: "Premium Feature - Creative tone requires Premium subscription.",
+        requiresUpgrade: true
+      });
+    }
+
+    console.log(`[timing] starting Groq call: ${Date.now() - t0}ms`);
+    const replies = await generateReplies(message, tone, language, isPremium);
+    console.log(`[timing] Groq done: ${Date.now() - t0}ms`); // 👈 if this is 20s, it's Groq
+
+    res.json({ success: true, replies: replies.replies, tone: replies.tone });
+    console.log(`[timing] total: ${Date.now() - t0}ms`);
+
+  } catch (error) {
+    console.error(`[timing] error at ${Date.now() - t0}ms:`, error);
+    res.status(500).json({ message: "Failed to generate replies" });
+  }
+});
   // Pattern analysis endpoint
   app.post("/api/pattern-interrupt", async (req, res) => {
     try {

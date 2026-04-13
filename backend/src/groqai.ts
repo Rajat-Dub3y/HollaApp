@@ -98,6 +98,7 @@ export async function generateReplies(
   if (!message.trim()) {
     throw new Error("Message cannot be empty");
   }
+  console.log("generating reply")
 
   try {
     const systemPrompt = `You are a dating reply generator. 
