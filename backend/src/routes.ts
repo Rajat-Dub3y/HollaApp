@@ -9,6 +9,12 @@ import { sendWelcomeEmail, sendFeedbackNotification, sendFeedbackAutoReply, send
 import { optionalAuth } from "./unifiedAuth";
 import { sql } from 'drizzle-orm';
 import { db } from './db';
+import OpenAI from "openai";
+
+const groq = new OpenAI({
+  apiKey: process.env.GORQ_API_KEY,
+  baseURL: "https://api.groq.com/openai/v1",
+});
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
@@ -1090,6 +1096,37 @@ Last Updated: ${new Date().toLocaleString()}
       version: "1.0.0"
     });
   });
+
+  // Test 1: Is Render cold? (no DB, no Groq)
+app.get('/api/ping', (req, res) => {
+  res.json({ pong: true, time: Date.now() });
+});
+
+// Test 2: Is Neon cold? (only DB, no Groq)
+app.get('/api/ping-db', async (req, res) => {
+  const t0 = Date.now();
+  try {
+    await db.execute(sql`SELECT 1`);
+    res.json({ db: 'ok', ms: Date.now() - t0 });
+  } catch (e) {
+    res.json({ db: 'error', ms: Date.now() - t0 });
+  }
+});
+
+// Test 3: Is Groq cold? (only Groq, no DB)
+app.get('/api/ping-groq', async (req, res) => {
+  const t0 = Date.now();
+  try {
+    await groq.chat.completions.create({
+      model: "llama-3.1-8b-instant",
+      messages: [{ role: "user", content: "say hi" }],
+      max_tokens: 5
+    });
+    res.json({ groq: 'ok', ms: Date.now() - t0 });
+  } catch (e) {
+    res.json({ groq: 'error', ms: Date.now() - t0 });
+  }
+});
 
   const httpServer = createServer(app);
   return httpServer;
