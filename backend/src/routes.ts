@@ -11,6 +11,9 @@ import { optionalAuth } from "./unifiedAuth";
 import { sql } from 'drizzle-orm';
 import { db } from './db';
 import OpenAI from "openai";
+import { setupStandaloneAuth } from "./standaloneAuth";
+import { setupDirectAuth } from "./directAuth";
+import { setupFirebaseAuth } from "./firebaseAuth";
 
 const groq = new OpenAI({
   apiKey: process.env.GORQ_API_KEY,
@@ -306,13 +309,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     `);
   });
 
-  // Setup authentication middleware
-  const { setupStandaloneAuth } = await import("./standaloneAuth");
-  const { setupDirectAuth } = await import("./directAuth");
-  const { setupFirebaseAuth } = await import("./firebaseAuth");
-  
-// Add this to registerRoutes in routes.ts
-// Unified route to return the current user session
   setupStandaloneAuth(app);
   setupDirectAuth(app);
   setupFirebaseAuth(app);

@@ -9,6 +9,7 @@ import { Wand2, Globe, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePremiumAccess } from "@/hooks/usePremiumAccess";
 import { useLocation } from "wouter";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface GeneratedReply {
   reply: string;
@@ -19,6 +20,13 @@ interface MessageInputProps {
   onRepliesGenerated: (replies: GeneratedReply[], tone: string) => void;
 }
 
+async function getTokenWithTimeout(user: any, timeout = 1500) {
+  return Promise.race([
+    user?.getIdToken(),
+    new Promise((resolve) => setTimeout(() => resolve(null), timeout)),
+  ]);
+}
+
 export default function MessageInput({ onRepliesGenerated }: MessageInputProps) {
   const [message, setMessage] = useState("");
   const [selectedTone, setSelectedTone] = useState<"confident" | "funny" | "flirty" | "creative">("confident");
@@ -26,6 +34,7 @@ export default function MessageInput({ onRepliesGenerated }: MessageInputProps) 
   const { toast } = useToast();
   const { isPremium } = usePremiumAccess();
   const [, setLocation] = useLocation();
+  const { currentUser } = useAuth();
 
   // Load language preference from localStorage on component mount
   useEffect(() => {
@@ -43,7 +52,33 @@ export default function MessageInput({ onRepliesGenerated }: MessageInputProps) 
 
   const generateRepliesMutation = useMutation({
     mutationFn: async (data: { message: string; tone: string; language: string }) => {
-      const response = await apiRequest("POST", "/api/generate-replies", data);
+      let token: string | null = null;
+
+      try {
+        token = currentUser
+          ? (await Promise.race([
+              currentUser.getIdToken(),
+              new Promise<null>((resolve) => setTimeout(() => resolve(null), 1500)),
+            ])) as string | null
+          : null;
+      } catch {
+        token = null;
+      }
+
+      const response = await fetch("/api/generate-replies", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text || "Request failed");
+      }
+
       return response.json();
     },
     onSuccess: (data) => {
