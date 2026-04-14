@@ -29,6 +29,25 @@ const logPaymentResolution = (source: string, lookup: string, userId: string) =>
   console.log(`[payments] ${source}: resolved user ${userId} via ${lookup}`);
 };
 
+const ipReplyTracker = new Map<string, { count: number; date: string }>();
+
+const getRepliesLeft = (ip: string, limit: number): number => {
+  const today = new Date().toISOString().split('T')[0];
+  const record = ipReplyTracker.get(ip);
+  if (!record || record.date !== today) {
+    ipReplyTracker.set(ip, { count: 0, date: today });
+    return limit;
+  }
+  return Math.max(0, limit - record.count);
+};
+
+const incrementIpCount = (ip: string) => {
+  const today = new Date().toISOString().split('T')[0];
+  const record = ipReplyTracker.get(ip) || { count: 0, date: today };
+  ipReplyTracker.set(ip, { count: record.count + 1, date: today });
+};
+
+
 async function resolvePaymentUser({
   req,
   metadataUserId,
@@ -115,33 +134,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = getRequestUserId(req);
 
+      // Return guest session if not logged in
       if (!userId) {
-        return res.status(401).json({ message: 'Not authenticated' });
+        return res.json({
+          id: null,
+          email: null,
+          subscriptionStatus: 'free',
+          isGuest: true
+        });
       }
 
       const user = await storage.getUser(userId);
 
       if (!user) {
-        return res.status(404).json({ message: 'User not found' });
+        return res.json({
+          id: null,
+          email: null,
+          subscriptionStatus: 'free',
+          isGuest: true
+        });
       }
 
       res.json({
         id: user.id,
         email: user.email,
-        subscriptionStatus: user.subscriptionStatus ?? null,
+        subscriptionStatus: user.subscriptionStatus ?? 'free',
+        isGuest: false
       });
     } catch (error) {
       console.error('Session user lookup error:', error);
       res.status(500).json({ message: 'Failed to load session user' });
     }
-  });
-
-  // Health check for external monitoring
-  app.get('/health', async (req, res) => {
-    try {
-      await db.execute(sql`SELECT 1`); // absolute lightest possible query
-    } catch (e) {}
-    res.status(200).send('OK');
   });
 
   // Simple status page that bypasses React
@@ -313,6 +336,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Allow testing in development or with test tier header
       isPremium = isPremium || (isTestMode && hasTestTier);
       
+      
       // Block premium features for non-premium users
       if (tone === "creative" && !isPremium) {
         return res.status(403).json({ 
@@ -339,22 +363,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Generate replies endpoint with premium validation
   app.post("/api/generate-replies", optionalAuth, async (req, res) => {
     try {
+      console.log(1)
       const { message, tone, language } = generateReplySchema.parse(req.body);
 
       const isTestMode = process.env.NODE_ENV === 'development';
       const hasTestTier = req.headers['x-test-tier'] === 'premium' || req.headers['x-test-tier'] === 'premium_plus';
       const userId = (req as any).user?.claims?.sub;
 
-      // 👇 Run DB lookup and Groq call at the SAME TIME
+      console.log(1)
       const [user, replies] = await Promise.all([
         userId ? storage.getUser(userId) : Promise.resolve(null),
-        generateReplies(message, tone, language) // optimistic — always generate
+        generateReplies(message, tone, language)
       ]);
 
       const isPremium = !!(user && ['premium', 'premium_plus'].includes((user as any).subscriptionStatus || ''))
         || (isTestMode && hasTestTier);
 
-      // Block creative AFTER we have the result (already generated, just gate it)
+      // 👇 One IP extraction, one limit check
+      const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.socket.remoteAddress || 'unknown';
+      const dailyLimit = isPremium ? 200 : 2;
+      const repliesLeft = getRepliesLeft(ip, dailyLimit);
+
+      if (repliesLeft <= 0) {
+        return res.status(403).json({
+          message: isPremium
+            ? "Daily limit of 200 replies reached. Resets at midnight!"
+            : "Daily Limit Reached! Upgrade to Premium Now To Get Unlimited Replies!",
+          requiresUpgrade: !isPremium
+        });
+      }
+
+      incrementIpCount(ip);
+
       if (tone === "creative" && !isPremium) {
         return res.status(403).json({
           message: "Premium Feature - Creative tone requires Premium subscription.",
@@ -365,40 +405,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`[generate] done (Premium: ${isPremium})`);
       res.json({ success: true, replies: replies.replies, tone: replies.tone });
 
-    } catch (error) {
-      console.error("Error generating replies:", error);
-      res.status(500).json({ message: "Failed to generate replies" });
-    }
-  });
-  app.get("/api/generate-replies",optionalAuth, async (req, res) => {
-    try {
-      const { message, tone, language } = generateReplySchema.parse(req.body);
-      
-      // Check premium status
-      let isPremium = false;
-      
-      // TEMPORARY: Allow testing
-      const isTestMode = process.env.NODE_ENV === 'development';
-      const hasTestTier = req.headers['x-test-tier'] === 'premium' || req.headers['x-test-tier'] === 'premium_plus';
-      
-      // Allow testing in development or with test tier header
-      isPremium = isPremium || (isTestMode && hasTestTier);
-      
-      // Block premium features for non-premium users
-      if (tone === "creative" && !isPremium) {
-        return res.status(403).json({ 
-          message: "Premium Feature - Creative tone requires Premium subscription. Upgrade to access psychology-backed replies.",
-          requiresUpgrade: true
-        });
-      }
-      console.log(`Generating replies for: ${message.substring(0, 50)}... (Premium: ${isPremium})`);
-      
-      const replies = await generateReplies(message, tone, language, isPremium);
-      res.json({ 
-        success: true, 
-        replies: replies.replies,
-        tone: replies.tone 
-      });
     } catch (error) {
       console.error("Error generating replies:", error);
       res.status(500).json({ message: "Failed to generate replies" });
