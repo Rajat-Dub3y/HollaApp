@@ -1135,6 +1135,14 @@ Last Updated: ${new Date().toLocaleString()}
     }
   });
 
+  app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
+  });
+});
+
   const httpServer = createServer(app);
   return httpServer;
 }
