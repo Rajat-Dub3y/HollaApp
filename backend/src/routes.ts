@@ -336,7 +336,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Generate replies endpoint with premium validation
-  app.post("/api/generate-replies",optionalAuth, async (req, res) => {
+  app.post("/api/generate-replies", optionalAuth, async (req, res) => {
+    try {
+      const { message, tone, language } = generateReplySchema.parse(req.body);
+
+      const isTestMode = process.env.NODE_ENV === 'development';
+      const hasTestTier = req.headers['x-test-tier'] === 'premium' || req.headers['x-test-tier'] === 'premium_plus';
+      const userId = (req as any).user?.claims?.sub;
+
+      // 👇 Run DB lookup and Groq call at the SAME TIME
+      const [user, replies] = await Promise.all([
+        userId ? storage.getUser(userId) : Promise.resolve(null),
+        generateReplies(message, tone, language) // optimistic — always generate
+      ]);
+
+      const isPremium = !!(user && ['premium', 'premium_plus'].includes((user as any).subscriptionStatus || ''))
+        || (isTestMode && hasTestTier);
+
+      // Block creative AFTER we have the result (already generated, just gate it)
+      if (tone === "creative" && !isPremium) {
+        return res.status(403).json({
+          message: "Premium Feature - Creative tone requires Premium subscription.",
+          requiresUpgrade: true
+        });
+      }
+
+      console.log(`[generate] done (Premium: ${isPremium})`);
+      res.json({ success: true, replies: replies.replies, tone: replies.tone });
+
+    } catch (error) {
+      console.error("Error generating replies:", error);
+      res.status(500).json({ message: "Failed to generate replies" });
+    }
+  });
+  app.get("/api/generate-replies",optionalAuth, async (req, res) => {
     try {
       const { message, tone, language } = generateReplySchema.parse(req.body);
       
@@ -346,10 +379,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // TEMPORARY: Allow testing
       const isTestMode = process.env.NODE_ENV === 'development';
       const hasTestTier = req.headers['x-test-tier'] === 'premium' || req.headers['x-test-tier'] === 'premium_plus';
-      if ((req as any).user?.claims?.sub) {
-        const user = await storage.getUser((req as any).user.claims.sub);
-        isPremium = !!(user && ['premium', 'premium_plus'].includes((user as any).subscriptionStatus || ''));
-      }
       
       // Allow testing in development or with test tier header
       isPremium = isPremium || (isTestMode && hasTestTier);
@@ -389,6 +418,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error analyzing pattern:", error);
       res.status(500).json({ message: "Failed to analyze pattern" });
+    }
+  });
+  app.get('/api/warmup', async (req, res) => {
+    const t0 = Date.now();
+    try {
+      await Promise.all([
+        db.execute(sql`SELECT 1`),
+        groq.chat.completions.create({
+          model: "llama-3.1-8b-instant",
+          messages: [{ role: "user", content: "hi" }],
+          max_tokens: 1
+        })
+      ]);
+      console.log(`[warmup] all services warm in ${Date.now() - t0}ms`);
+      res.json({ status: 'warm', ms: Date.now() - t0 });
+    } catch (e) {
+      console.warn(`[warmup] partial warmup in ${Date.now() - t0}ms`, e);
+      res.json({ status: 'partial', ms: Date.now() - t0 });
     }
   });
 
@@ -1087,46 +1134,6 @@ Last Updated: ${new Date().toLocaleString()}
       res.status(500).json({ message: "Failed to mark feedback" });
     }
   });
-
-  // Health check endpoint
-  app.get("/api/health", (req, res) => {
-    res.json({ 
-      status: "healthy", 
-      timestamp: new Date().toISOString(),
-      version: "1.0.0"
-    });
-  });
-
-  // Test 1: Is Render cold? (no DB, no Groq)
-app.get('/api/ping', (req, res) => {
-  res.json({ pong: true, time: Date.now() });
-});
-
-// Test 2: Is Neon cold? (only DB, no Groq)
-app.get('/api/ping-db', async (req, res) => {
-  const t0 = Date.now();
-  try {
-    await db.execute(sql`SELECT 1`);
-    res.json({ db: 'ok', ms: Date.now() - t0 });
-  } catch (e) {
-    res.json({ db: 'error', ms: Date.now() - t0 });
-  }
-});
-
-// Test 3: Is Groq cold? (only Groq, no DB)
-app.get('/api/ping-groq', async (req, res) => {
-  const t0 = Date.now();
-  try {
-    await groq.chat.completions.create({
-      model: "llama-3.1-8b-instant",
-      messages: [{ role: "user", content: "say hi" }],
-      max_tokens: 5
-    });
-    res.json({ groq: 'ok', ms: Date.now() - t0 });
-  } catch (e) {
-    res.json({ groq: 'error', ms: Date.now() - t0 });
-  }
-});
 
   const httpServer = createServer(app);
   return httpServer;
