@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import Stripe from "stripe";
 import { storage } from "./storage";
 import { generateReplySchema, supportChatSchema } from "./schema";
+import admin from 'firebase-admin';
 //import { generateReplies, generateRomeoResponse, analyzeMessagePattern, generateRomeoDateingCoachResponse } from "./openai.ts";
 import { generateReplies, generateRomeoResponse, analyzeMessagePattern, generateRomeoDateingCoachResponse } from "./groqai";
 import { sendWelcomeEmail, sendFeedbackNotification, sendFeedbackAutoReply, sendPremiumUpgradeEmail, sendPremiumPlusUpgradeEmail, sendDripCampaignEmail, sendRefundRequestAutoReply, sendRefundRequestNotification } from "./sendgrid";
@@ -423,14 +424,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/warmup', async (req, res) => {
     const t0 = Date.now();
     try {
-      await Promise.all([
-        db.execute(sql`SELECT 1`),
-        groq.chat.completions.create({
-          model: "llama-3.1-8b-instant",
-          messages: [{ role: "user", content: "hi" }],
-          max_tokens: 1
-        })
-      ]);
+      admin.auth().getUser('warmup').catch(() => {}),
       console.log(`[warmup] all services warm in ${Date.now() - t0}ms`);
       res.json({ status: 'warm', ms: Date.now() - t0 });
     } catch (e) {
