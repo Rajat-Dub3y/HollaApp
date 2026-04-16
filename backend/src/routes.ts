@@ -377,14 +377,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // 👇 One IP extraction, one limit check
       const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.socket.remoteAddress || 'unknown';
-      const dailyLimit = isPremium ? 200 : 2;
+      const dailyLimit = isPremium ? 20 : 2;
       const repliesLeft = getRepliesLeft(ip, dailyLimit);
 
       if (repliesLeft <= 0) {
         return res.status(403).json({
           message: isPremium
-            ? "Daily limit of 200 replies reached. Resets at midnight!"
-            : "Daily Limit Reached! Upgrade to Premium Now To Get Unlimited Replies!",
+            ? "Daily limit of 20 replies reached. Resets at midnight!"
+            : "Daily Limit Reached! Upgrade to Premium Now To Get 20 Replies!",
           requiresUpgrade: !isPremium
         });
       }
@@ -638,7 +638,7 @@ app.post('/api/create-payment-intent', optionalAuth, async (req: any, res) => {
               currency: 'usd',
               product_data: {
                 name: 'Holla Premium Subscription',
-                description: 'Unlimited AI-powered replies and advanced conversation insights',
+                description: '20 AI-powered replies and advanced conversation insights',
               },
               unit_amount: 999, // $9.99
               recurring: {

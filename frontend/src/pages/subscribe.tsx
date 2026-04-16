@@ -44,7 +44,7 @@ const SubscribeForm = () => {
         await apiRequest("POST", "/api/activate-premium");
         toast({
           title: "Welcome To Premium!",
-          description: "You now have access to unlimited replies and advanced features.",
+          description: "You now have access to 20 replies and advanced features.",
         });
         setLocation("/welcome-premium");
       } catch (activationError) {
@@ -60,7 +60,7 @@ const SubscribeForm = () => {
         <Crown className="h-12 w-12 text-purple-600 mx-auto mb-4" />
         <h2 className="text-3xl font-bold text-gray-900 mb-2">Complete Your Subscription</h2>
         <p className="text-gray-600">
-          Get unlimited AI-powered replies and advanced conversation insights
+          Get 20 AI-powered replies and advanced conversation insights
         </p>
       </div>
 
@@ -170,7 +170,7 @@ export default function Subscribe() {
                 <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center mr-3">
                   <span className="text-white text-xs">✓</span>
                 </div>
-                <span className="text-gray-700">Unlimited Replies</span>
+                <span className="text-gray-700">20 Replies</span>
               </div>
               <div className="flex items-center">
                 <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center mr-3">

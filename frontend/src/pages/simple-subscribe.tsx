@@ -43,7 +43,7 @@ const SubscribeForm = ({ email }: { email: string }) => {
     } else {
       toast({
         title: "Welcome To Premium!",
-        description: "You now have access to unlimited replies and advanced features.",
+        description: "You now have access to 20 replies and advanced features.",
       });
       setLocation("/welcome-premium");
     }
@@ -55,7 +55,7 @@ const SubscribeForm = ({ email }: { email: string }) => {
         <Crown className="h-12 w-12 text-purple-600 mx-auto mb-4" />
         <h2 className="text-3xl font-bold text-gray-900 mb-2">Complete Your Subscription</h2>
         <p className="text-gray-600">
-          Get unlimited AI-powered replies and advanced conversation insights
+          Get 20 AI-powered replies and advanced conversation insights
         </p>
         <p className="text-sm text-green-600 mt-2">Signed in as: {email}</p>
       </div>

@@ -49,7 +49,7 @@ export default function ResultsSection({ replies, tone }: ResultsSectionProps) {
     if (currentSaved.length >= 10) {
       toast({
         title: "Save Limit Reached",
-        description: "Free plan allows only 10 saved replies. Upgrade to Premium for unlimited saves!",
+        description: "Free plan allows only 10 saved replies. Upgrade to Premium for 20 saves!",
         variant: "destructive",
       });
       return;
@@ -139,7 +139,7 @@ export default function ResultsSection({ replies, tone }: ResultsSectionProps) {
               <span className="font-medium">Save Feature:</span> Click the bookmark icon on any reply to save it to your collection.
             </p>
             <p className="text-xs text-purple-600 mt-1">
-              View all your saved replies in the "Saved Replies" tab above. Free users get 10 saves, Premium gets unlimited.
+              View all your saved replies in the "Saved Replies" tab above. Free users get 10 saves, Premium gets 20.
             </p>
           </div>
         </div>

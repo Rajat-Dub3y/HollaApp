@@ -43,7 +43,7 @@ export default function WelcomePremium() {
         <div className="space-y-4 mb-8">
           <div className="flex items-center space-x-3 p-3 bg-purple-50 rounded-lg">
             <Zap className="w-5 h-5 text-purple-600" />
-            <span className="text-sm text-gray-700">Unlimited AI-powered replies</span>
+            <span className="text-sm text-gray-700">20 AI-powered replies</span>
           </div>
           
           <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">

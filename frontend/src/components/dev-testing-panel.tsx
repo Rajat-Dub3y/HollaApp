@@ -127,7 +127,7 @@ export default function DevTestingPanel() {
               <h4 className="text-sm font-medium text-blue-900 mb-2">Test Cases</h4>
               <ul className="text-xs text-blue-700 space-y-1">
                 <li>• Creative tone access control</li>
-                <li>• Unlimited replies for Premium</li>
+                <li>• 20 replies for Premium</li>
                 <li>• Premium upsell messages</li>
                 <li>• Subscription status display</li>
               </ul>

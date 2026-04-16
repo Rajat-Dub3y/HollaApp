@@ -224,7 +224,7 @@ const MobilePaymentForm = ({ email, clientSecret }: { email: string; clientSecre
       <div className="text-center mb-6 sm:mb-8">
         <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Complete Your Subscription</h2>
         <p className="text-gray-600 mb-2 text-sm sm:text-base">
-          Get unlimited AI-powered replies and advanced conversation insights
+          Get 20 AI-powered replies and advanced conversation insights
         </p>
         <p className="text-sm text-green-600">Signed in as: {email}</p>
         

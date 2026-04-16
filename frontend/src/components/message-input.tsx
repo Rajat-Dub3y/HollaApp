@@ -94,7 +94,7 @@ export default function MessageInput({ onRepliesGenerated }: MessageInputProps) 
       
       if (errorMessage.includes("Daily Limit Reached") || errorMessage.includes("Forbidden") || errorMessage.includes("403")) {
         toast({
-          title: "Daily Limit Reached! Upgrade to Premium Now To Get Unlimited Replies!",
+          title: "Daily Limit Reached! Upgrade to Premium Now To Get 20 Replies!",
           description: "",
           variant: "destructive",
         });

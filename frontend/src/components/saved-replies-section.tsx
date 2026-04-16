@@ -17,7 +17,7 @@ export default function SavedRepliesSection() {
   const { user } = usePremiumAccess();
   
   const isPremium = (user as any)?.subscriptionStatus === "premium" || (user as any)?.subscriptionStatus === "premium_plus";
-  const maxSavedReplies = isPremium ? "Unlimited" : "10";
+  const maxSavedReplies = isPremium ? "20" : "10";
 
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem('holla-saved-replies') || '[]');
@@ -77,7 +77,7 @@ export default function SavedRepliesSection() {
           <div className="flex items-center space-x-2 bg-gradient-to-r from-purple-50 to-blue-50 px-4 py-2 rounded-lg border border-purple-200">
             <Crown className="h-4 w-4 text-purple-600" />
             <span className="text-sm font-medium text-purple-700">
-              Upgrade For Unlimited Saves
+              Upgrade For 20 Saves
             </span>
           </div>
         )}
@@ -147,7 +147,7 @@ export default function SavedRepliesSection() {
                 You're close to your saved replies limit!
               </p>
               <p className="text-xs text-purple-600 mt-1">
-                Upgrade to Premium to save unlimited replies and unlock advanced features.
+                Upgrade to Premium to save 20 replies and unlock advanced features.
               </p>
             </div>
           </div>

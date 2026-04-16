@@ -48,7 +48,7 @@ export default function Help() {
               Unlock advanced AI capabilities with Premium subscription
             </p>
             <ul className="text-sm text-gray-700 space-y-2">
-              <li>• Unlimited AI-generated replies</li>
+              <li>• 20 AI-generated replies</li>
               <li>• Creative psychology-backed responses</li>
               <li>• Expert dating coach AI training</li>
               <li>• Pattern interrupt techniques</li>

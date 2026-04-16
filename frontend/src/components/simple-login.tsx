@@ -58,7 +58,7 @@ export default function SimpleLogin({ onLoginSuccess }: SimpleLoginProps) {
           <Mail className="h-8 w-8 text-blue-600" />
         </div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Sign In to Premium</h2>
-        <p className="text-gray-600">Enter your email to access unlimited AI replies</p>
+        <p className="text-gray-600">Enter your email to access 20 AI replies</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">

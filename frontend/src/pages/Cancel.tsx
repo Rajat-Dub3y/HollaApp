@@ -131,7 +131,7 @@ export default function Cancel() {
             </p>
             <ul className="space-y-1">
               {[
-                "Unlimited AI-generated replies",
+                "20 AI-generated replies",
                 "Creative tone & advanced tones",
                 "Romeo dating coach",
                 "Saved replies & conversation history",

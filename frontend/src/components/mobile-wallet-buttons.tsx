@@ -73,7 +73,7 @@ export default function MobileWalletButtons({ email, onPaymentSuccess }: MobileW
             
             toast({
               title: "Welcome To Premium!",
-              description: "You now have access to unlimited replies and advanced features.",
+              description: "You now have access to 20 replies and advanced features.",
             });
             
             onPaymentSuccess();

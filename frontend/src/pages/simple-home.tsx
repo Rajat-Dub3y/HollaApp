@@ -389,7 +389,7 @@ export default function SimpleHome() {
           }}>
             <h3 style={{ margin: "0 0 15px 0", fontSize: "24px" }}>Upgrade to Premium</h3>
             <p style={{ margin: "0 0 20px 0", fontSize: "16px" }}>
-              Unlock Creative tone, Pattern Interrupt Engine, and unlimited replies
+              Unlock Creative tone, Pattern Interrupt Engine, and 20 replies
             </p>
             <a
               href="/subscribe"

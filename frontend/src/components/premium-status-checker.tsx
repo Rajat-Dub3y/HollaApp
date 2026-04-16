@@ -46,7 +46,7 @@ export default function PremiumStatusChecker({ email, subscriptionStatus }: Prem
           <div className="text-left space-y-2">
             <div className="flex items-center space-x-2 text-sm text-gray-700">
               <CheckCircle className="w-4 h-4 text-green-600" />
-              <span>Unlimited AI-powered replies</span>
+              <span>20 AI-powered replies</span>
             </div>
             <div className="flex items-center space-x-2 text-sm text-gray-700">
               <CheckCircle className="w-4 h-4 text-green-600" />

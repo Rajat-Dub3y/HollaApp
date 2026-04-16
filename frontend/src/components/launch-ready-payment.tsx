@@ -268,7 +268,7 @@ const LaunchPaymentForm = ({ email, clientSecret }: { email: string; clientSecre
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Complete Your Premium Subscription</h2>
         <p className="text-gray-600 mb-4">
-          Unlock unlimited AI-powered replies and advanced dating insights
+          Unlock 20 AI-powered replies and advanced dating insights
         </p>
         
         <div className="flex items-center justify-center space-x-6 text-sm text-gray-500 mb-4">

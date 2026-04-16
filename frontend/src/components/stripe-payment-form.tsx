@@ -53,7 +53,7 @@ export default function StripePaymentForm({ email }: StripePaymentFormProps) {
         
         toast({
           title: "Welcome To Premium!",
-          description: "You now have access to unlimited replies and advanced features.",
+          description: "You now have access to 20 replies and advanced features.",
         });
         
         // Force page reload to update user status
@@ -75,7 +75,7 @@ export default function StripePaymentForm({ email }: StripePaymentFormProps) {
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-gray-900 mb-2">Complete Your Subscription</h2>
         <p className="text-gray-600 mb-2">
-          Get unlimited AI-powered replies and advanced conversation insights
+          Get 20 AI-powered replies and advanced conversation insights
         </p>
         <p className="text-sm text-green-600">Signed in as: {email}</p>
       </div>

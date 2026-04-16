@@ -101,7 +101,7 @@ const CheckoutForm = ({ standaloneUser, authUser }: { standaloneUser: any; authU
           <li>• Creative tone responses</li>
           <li>• Pattern Interrupt Engine</li>
           <li>• Romeo Dating Master coach</li>
-          <li>• Unlimited message generation</li>
+          <li>• 20 message generation</li>
           <li>• Priority support</li>
         </ul>
       </div>

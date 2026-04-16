@@ -20,7 +20,7 @@ export default function PremiumUpsell() {
           <div className="bg-white rounded-2xl p-8 shadow-lg">
             <Crown className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Premium Active</h2>
-            <p className="text-gray-600">You have full access to all premium features. Enjoy unlimited AI-powered replies and dating coach!</p>
+            <p className="text-gray-600">You have full access to all premium features. Enjoy 20 AI-powered replies and dating coach!</p>
           </div>
         </div>
       </section>
@@ -103,7 +103,7 @@ export default function PremiumUpsell() {
             <ul className="space-y-4 mb-8">
               <li className="flex items-center space-x-3">
                 <Check className="text-green-500 h-5 w-5" />
-                <span className="text-gray-900">Unlimited Replies</span>
+                <span className="text-gray-900">20 Replies</span>
               </li>
               <li className="flex items-center space-x-3">
                 <Check className="text-green-500 h-5 w-5" />

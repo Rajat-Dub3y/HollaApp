@@ -50,12 +50,12 @@ export const premiumUpgradeEmailTemplate = (email: string, userName?: string) =>
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <h2 style="color: #7C3AED;">Welcome to Premium! 🚀 Now you're dating like a pro.</h2>
       
-      <p>Enjoy unlimited replies, exclusive tools and more. You just unlocked the dating cheat codes.</p>
+      <p>Enjoy 20 replies, exclusive tools and more. You just unlocked the dating cheat codes.</p>
       
       <div style="background: linear-gradient(135deg, #7C3AED, #2563EB); color: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
         <h3 style="margin: 0 0 15px 0; color: white;">Your Premium Arsenal:</h3>
         <ul style="margin: 0; padding-left: 20px;">
-          <li>🚀 Unlimited AI replies (no more limits)</li>
+          <li>🚀 20 AI replies (no more limits)</li>
           <li>🎯 Advanced conversation starters</li>
           <li>💬 Romeo AI personal coach</li>
           <li>⚡ Priority everything</li>
@@ -75,10 +75,10 @@ export const premiumUpgradeEmailTemplate = (email: string, userName?: string) =>
   `,
   text: `Welcome to Premium! Now you're dating like a pro.
 
-Enjoy unlimited replies, exclusive tools and more. You just unlocked the dating cheat codes.
+Enjoy 20 replies, exclusive tools and more. You just unlocked the dating cheat codes.
 
 Your Premium Arsenal:
-• Unlimited AI replies (no more limits)
+• 20 AI replies (no more limits)
 • Advanced conversation starters
 • Romeo AI personal coach
 • Priority everything

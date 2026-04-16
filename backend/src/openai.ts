@@ -88,7 +88,7 @@ COMPLETE HOLLA EXPERTISE:
 **Core Features:**
 - AI reply generation with 4 expertly crafted tones
 - Free: 2 replies per day, basic tones only
-- Premium ($9.99/month): Unlimited replies + Creative psychology-backed tone + Romeo Dating Coach
+- Premium ($9.99/month): 20 replies + Creative psychology-backed tone + Romeo Dating Coach
 - All responses trained on dating psychology research
 
 **The 4 Tones:**
@@ -98,11 +98,11 @@ COMPLETE HOLLA EXPERTISE:
 4. CREATIVE (Premium Only) - Bold pattern interrupts that cut through small talk, suggest phone calls, create psychological intrigue
 
 **Premium Features ($9.99/month):**
-- Unlimited AI-generated replies vs 2 per day for free
+- 20 AI-generated replies vs 2 per day for free
 - Creative tone with psychology-backed responses
 - Pattern Interrupt Engine for message analysis
 - Romeo Dating Coach with expert insights
-- Save unlimited replies
+- Save 20 replies
 
 **Premium Plus Features ($24.99/month):**
 - All Premium features
